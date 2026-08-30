@@ -31,6 +31,57 @@ app.post('/capture', async (c) => {
   }
 });
 
+/**
+ * SAVE — the fast half of capture. Writes the raw item to inbox/ and returns.
+ * No Codex, no inference, no commit. This is what a highlight should cost.
+ */
+app.post('/save', async (c) => {
+  const t0 = Date.now();
+  const body = (await c.req.json()) as CaptureInput;
+  if (!body?.text?.trim()) return c.json({ ok: false, error: 'text required' }, 400);
+  try {
+    const sb = await getVaultSandbox();
+    const rel = await writeToInbox(sb, body);
+    metric('save_ms', Date.now() - t0);
+    return c.json({ ok: true, inbox: rel });
+  } catch (e: any) {
+    return c.json({ ok: false, error: String(e?.message ?? e) }, 500);
+  }
+});
+
+/**
+ * FILE — the slow half. Runs Codex in the vault sandbox to route the item,
+ * name it, write frontmatter, link it, and commit. Seconds, not milliseconds.
+ */
+app.post('/file', async (c) => {
+  const t0 = Date.now();
+  const { inbox } = (await c.req.json()) as { inbox: string };
+  if (!inbox) return c.json({ ok: false, error: 'inbox path required' }, 400);
+  try {
+    const sb = await getVaultSandbox();
+    const result = await fileCapture(sb, inbox);
+    await syncVaultDown(sb);
+    metric('file_ms', Date.now() - t0);
+    return c.json({ ok: true, ...result });
+  } catch (e: any) {
+    return c.json({ ok: false, error: String(e?.message ?? e) }, 500);
+  }
+});
+
+/** What is sitting in inbox/ unfiled, for the HUD's session list to reconcile against. */
+app.get('/api/inbox', async (c) => {
+  try {
+    const sb = await getVaultSandbox();
+    const r = await sb.process.executeCommand(
+      `cd /root/vault && ls inbox/*.md 2>/dev/null || true`, undefined, undefined, 30,
+    );
+    const files = (r.result ?? '').trim().split('\n').filter((f) => f.endsWith('.md'));
+    return c.json({ ok: true, files });
+  } catch (e: any) {
+    return c.json({ ok: false, error: String(e?.message ?? e) }, 500);
+  }
+});
+
 /** Layer 3: overlaps -> ideas with citations -> N sandboxes each building a live prototype. */
 app.post('/synthesize', async (c) => {
   const t0 = Date.now();

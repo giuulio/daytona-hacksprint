@@ -16,6 +16,10 @@ as error.
 Generalises well beyond paths — any system where declared design and observed
 usage diverge, and someone must decide which one is wrong.
 
+The path makes the conflict unusually legible: observed behaviour and the
+intended route cannot both be treated as authoritative when they disagree.
+Responding means choosing whether the design or the evidence should change.
+
 ## Links
 - [[eventual-consistency-primer]]
 - [[telemetry-driven-design-talk]]

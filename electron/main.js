@@ -114,22 +114,24 @@ function createWindow() {
       nodeIntegration: false,
     },
   });
+  // 'screen-saver' is the level that floats above full-screen apps; the default
+  // always-on-top level sits below them. Combined with visibleOnFullScreen the
+  // HUD follows you across spaces instead of living only on desktop 1.
+  win.setAlwaysOnTop(true, 'screen-saver');
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   win.loadFile(path.join(__dirname, 'hud.html'));
-  win.on('blur', () => { if (win?.isVisible()) hide(); });
+  // Deliberately NO blur handler — the HUD is a session surface you keep open
+  // while reading. It closes on the X button or esc, nothing else.
 }
 
 function hide() {
   win?.hide();
-  // Give focus back to whatever the user was reading.
-  if (process.platform === 'darwin') app.hide();
 }
 
 async function summon() {
   const t0 = Date.now();
   try {
     if (!win) createWindow();
-    if (win.isVisible()) return hide();
 
     // Show FIRST, and take no focus. showInactive leaves the source app focused,
     // which is exactly what Cmd-C needs; focus is stolen only once we have text.
@@ -141,6 +143,10 @@ async function summon() {
     // Warmed by the timer, so no cold pasteboard read on the critical path.
     const prev = lastClip;
 
+    // Must resolve BEFORE win.focus() below, or lsappinfo reports the HUD itself
+    // as the frontmost app. Started here, awaited once the text is in hand.
+    const appP = frontAppAsync();
+
     await sendCopy();
     const tPoll = Date.now();
     const text = await grabSelection(prev);
@@ -148,15 +154,16 @@ async function summon() {
 
     if (text) await restoreClipboard(prev, text); // nothing copied ⇒ nothing to restore
 
+    const appName = await appP;
     win.focus();
-    win.webContents.send('capture:selection', { text, sourceApp: '', sourceUrl: '' });
+    win.webContents.send('capture:selection', { text, sourceApp: appName, sourceUrl: '' });
     console.log(
       `[summon] visible in ${tShown - t0}ms, text at ${tGrab - t0}ms ` +
       `(copy ${tPoll - tShown}, poll ${tGrab - tPoll}) chars=${text.length}`,
     );
 
-    // Second pass: source attribution, once the window is already up.
-    const appName = await frontAppAsync();
+    // Second pass: the URL, which targets the app by name and so is safe to run
+    // after focus has moved.
     const url = await browserUrlAsync(appName);
     if (win && !win.isDestroyed()) {
       win.webContents.send('capture:source', { sourceApp: appName, sourceUrl: url });
@@ -175,14 +182,17 @@ app.whenReady().then(() => {
   if (process.platform === 'darwin') app.dock?.hide(); // menu-bar-less background agent
 });
 
-ipcMain.handle('capture:submit', async (_e, payload) => {
-  const res = await fetch(`http://localhost:${PORT}/capture`, {
+const post = async (route, payload) => {
+  const res = await fetch(`http://localhost:${PORT}${route}`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(payload),
   });
   return res.json();
-});
+};
+
+ipcMain.handle('capture:save', (_e, payload) => post('/save', payload));
+ipcMain.handle('capture:file', (_e, payload) => post('/file', payload));
 
 ipcMain.on('capture:dismiss', hide);
 ipcMain.on('capture:resize', (_e, h) => {

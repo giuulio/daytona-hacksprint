@@ -18,7 +18,7 @@ the **Codex CLI**, running inside **Daytona** sandboxes.
 
 | Layer | What happens |
 | --- | --- |
-| **1 · Capture** | Highlight text anywhere on macOS, press ⌘⇧K. A floating HUD shows what you grabbed, takes an optional note, and files it. It lands in the vault's `inbox/`. |
+| **1 · Capture** | Highlight text anywhere on macOS, press ⌘⇧K. A floating HUD grabs it, takes an optional note, and **saves** it to `inbox/` instantly. The HUD stays open across spaces and full-screen apps and keeps a scrollable log of the session. |
 | **2 · File** | Codex, in a sandbox holding the vault, reads the filing ruleset, greps for near-duplicates, decides route + filename + frontmatter + links, writes the note and commits. **No confirmation step.** |
 | **3 · Synthesize** | Codex reads the whole vault, finds cross-domain overlaps, proposes ideas that cite the exact notes they came from — then N sandboxes each build a live prototype, rendered as iframes. |
 
@@ -55,8 +55,23 @@ npm run hud     # registers ⌘⇧K globally, runs as a background agent
 ```
 
 Highlight text in any app, press ⌘⇧K. The HUD shows the selection, the source
-app and URL, and takes an optional note. ⏎ files it, esc dismisses. Your
-clipboard is restored afterwards.
+app and URL, and takes an optional note. Your clipboard is restored afterwards.
+
+**Save and file are deliberately separate**, because they cost three orders of
+magnitude apart:
+
+| | What happens | Cost |
+| --- | --- | --- |
+| **Save** (⏎) | Writes the raw item to `inbox/`. No agent. | **~0.4s** |
+| **File** | Codex reads the vault, picks the route, filename, frontmatter and links, then commits. | **~28s** |
+
+So a reading session is a burst of instant saves, and filing happens when you
+choose — per item, or *File all* at the end. The HUD keeps every capture of the
+session in a scrollable log with its state (in inbox / filing / filed → path),
+so you can glance back at what you grabbed without leaving the paper.
+
+It stays open until you dismiss it with ✕ or esc — clicking away does not close
+it, and it floats above full-screen apps and follows you across spaces.
 
 The window appears in **~2ms** and the selection resolves in **~200-420ms**.
 Getting there needed three fixes worth knowing about if you build something
@@ -119,6 +134,8 @@ Instrumented from the first sandbox onward — see `metrics.jsonl`.
 | Vault sync back to disk | 0.2s |
 | HUD window on screen | **~2ms** |
 | HUD selection resolved | 200-420ms |
+| **Save** (highlight → `inbox/`) | **0.4s** |
+| **File** (Codex routes and commits) | 28s |
 | Synthesis (vault → 3 cited ideas) | 40s |
 | **Capture → live prototype URL, p50** | **54s** |
 | Full 3-way fan-out, end to end | 117s (3/3 live) |

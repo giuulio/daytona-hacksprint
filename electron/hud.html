@@ -8,7 +8,7 @@
     --fg: #f4f4f8; --dim: #a2a6b6; --faint: #757b8e;
     --violet: #a78bfa; --violet-soft: rgba(167,139,250,0.30);
     --violet-line: rgba(167,139,250,0.55);
-    --ok: #9ece6a; --bad: #f7768e;
+    --ok: #9ece6a; --amber: #e0af68; --bad: #f7768e;
     --line: rgba(255,255,255,0.11);
   }
   * { box-sizing: border-box; }
@@ -18,29 +18,29 @@
     font: 14px/1.5 -apple-system, ui-sans-serif, system-ui, sans-serif;
     color: var(--fg); -webkit-font-smoothing: antialiased;
     display: flex; flex-direction: column;
-    border-radius: 14px;
-    border: 1px solid var(--line);
-    background: rgba(18,19,26,0.55);
-    animation: rise 0.13s cubic-bezier(.2,.8,.3,1);
+    border-radius: 14px; border: 1px solid var(--line);
+    background: rgba(18,19,26,0.58);
+    animation: rise .13s cubic-bezier(.2,.8,.3,1);
   }
-  @keyframes rise { from { opacity: 0; transform: translateY(5px) scale(0.99); } }
+  @keyframes rise { from { opacity: 0; transform: translateY(5px) scale(.99); } }
 
   header {
     -webkit-app-region: drag;
-    display: flex; align-items: center; gap: 9px;
-    padding: 12px 15px; flex: none;
+    display: flex; align-items: center; gap: 9px; padding: 11px 12px 11px 15px; flex: none;
   }
   .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--violet); flex: none;
          box-shadow: 0 0 0 3px rgba(167,139,250,0.18); }
   .src { font-size: 12px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .src b { color: var(--fg); font-weight: 600; }
-  .url { font: 11px ui-monospace, Menlo, monospace; color: var(--faint);
-         margin-left: auto; max-width: 46%; white-space: nowrap; overflow: hidden;
-         text-overflow: ellipsis; direction: rtl; text-align: right; }
+  .url { font: 11px ui-monospace, Menlo, monospace; color: var(--faint); margin-left: auto;
+         max-width: 42%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+         direction: rtl; text-align: right; }
+  .x { -webkit-app-region: no-drag; flex: none; width: 22px; height: 22px; border-radius: 6px;
+       border: 1px solid var(--line); background: rgba(255,255,255,0.05); color: var(--dim);
+       font: 13px/1 -apple-system, system-ui; cursor: pointer; padding: 0; }
+  .x:hover { background: rgba(247,118,142,0.16); color: #ffb3c0; border-color: rgba(247,118,142,.4); }
 
-  .body { padding: 2px 16px 10px; overflow: hidden; display: flex; align-items: flex-start; }
-
-  /* the highlighter swash — clone so every wrapped line keeps it */
+  .capture { padding: 2px 16px 0; }
   .mark {
     font: 15px/1.75 ui-serif, Georgia, "Times New Roman", serif;
     background: linear-gradient(transparent 10%, var(--violet-soft) 10%, var(--violet-soft) 90%, transparent 90%);
@@ -48,46 +48,71 @@
     padding: 1px 4px; border-radius: 2px;
     display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
   }
-  .mark.empty { font-family: inherit; font-size: 14px; color: #ded8f8; }
-  .mark.reading { font-family: inherit; font-size: 14px; color: #b9b3d6;
-                  background: linear-gradient(transparent 10%, rgba(167,139,250,0.16) 10%,
-                              rgba(167,139,250,0.16) 90%, transparent 90%);
-                  animation: breathe 1.1s ease-in-out infinite; }
+  .mark.empty, .mark.reading { font-family: inherit; font-size: 14px; color: #ded8f8; }
+  .mark.reading { background: linear-gradient(transparent 10%, rgba(167,139,250,.16) 10%,
+                  rgba(167,139,250,.16) 90%, transparent 90%); animation: breathe 1.1s ease-in-out infinite; }
   @keyframes breathe { 50% { opacity: .5; } }
 
-  footer {
-    -webkit-app-region: no-drag;
-    display: flex; align-items: center; gap: 9px;
-    padding: 11px 15px 13px; flex: none; border-top: 1px solid var(--line);
-  }
+  .row { -webkit-app-region: no-drag; display: flex; align-items: center; gap: 8px; padding: 11px 15px 12px; }
   input {
-    flex: 1; background: rgba(255,255,255,0.06); color: var(--fg);
-    border: 1px solid var(--line); border-radius: 9px;
-    padding: 10px 12px; font: inherit; outline: none;
-    transition: border-color .14s, background .14s;
+    flex: 1; background: rgba(255,255,255,.06); color: var(--fg);
+    border: 1px solid var(--line); border-radius: 9px; padding: 10px 12px;
+    font: inherit; outline: none; transition: border-color .14s, background .14s;
   }
   input::placeholder { color: var(--faint); }
-  input:focus { border-color: var(--violet-line); background: rgba(167,139,250,0.09); }
+  input:focus { border-color: var(--violet-line); background: rgba(167,139,250,.09); }
   input:disabled { opacity: .45; }
 
-  button {
+  button.act {
     flex: none; border: 0; border-radius: 9px; cursor: pointer;
     background: var(--violet); color: #16121f;
     font: 600 13px/1 -apple-system, system-ui, sans-serif;
-    padding: 11px 15px; display: flex; align-items: center; gap: 7px;
+    padding: 11px 14px; display: flex; align-items: center; gap: 6px;
     transition: filter .14s, opacity .14s;
   }
-  button:hover:not(:disabled) { filter: brightness(1.1); }
-  button:disabled { opacity: .38; cursor: default; }
-  button .ret { font: 11px ui-monospace, Menlo, monospace; opacity: .65; }
+  button.act:hover:not(:disabled) { filter: brightness(1.1); }
+  button.act:disabled { opacity: .35; cursor: default; }
+  button.act .ret { font: 11px ui-monospace, Menlo, monospace; opacity: .6; }
 
-  .state { display: none; align-items: center; gap: 10px; padding: 0 16px 4px; font-size: 13px; }
-  .state.on { display: flex; }
-  .spin { width: 13px; height: 13px; border: 2px solid rgba(255,255,255,0.18);
-          border-top-color: var(--violet); border-radius: 50%; animation: sp .7s linear infinite; flex: none; }
-  @keyframes sp { to { transform: rotate(360deg); } }
-  .route { font: 12px ui-monospace, Menlo, monospace; color: var(--ok); }
-  .err { color: var(--bad); font-size: 12px; }
+  /* ---- session log ---- */
+  .sess { border-top: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; }
+  .sesshead {
+    display: flex; align-items: center; gap: 8px; padding: 9px 15px 7px; flex: none;
+    font: 11px ui-monospace, Menlo, monospace; color: var(--faint);
+    text-transform: uppercase; letter-spacing: .07em;
+  }
+  .fileall {
+    -webkit-app-region: no-drag; margin-left: auto; border: 1px solid var(--violet-line);
+    background: rgba(167,139,250,.12); color: #cbb8ff; border-radius: 7px;
+    font: 600 11px/1 -apple-system, system-ui; padding: 6px 9px; cursor: pointer;
+  }
+  .fileall:disabled { opacity: .3; cursor: default; }
+  .list { overflow-y: auto; max-height: 190px; padding: 0 10px 10px; }
+  .list::-webkit-scrollbar { width: 8px; }
+  .list::-webkit-scrollbar-thumb { background: rgba(255,255,255,.13); border-radius: 4px; }
+  .item {
+    display: flex; align-items: flex-start; gap: 9px; padding: 8px 6px;
+    border-radius: 8px; font-size: 12.5px;
+  }
+  .item:hover { background: rgba(255,255,255,.04); }
+  .pip { width: 6px; height: 6px; border-radius: 50%; flex: none; margin-top: 6px; }
+  .pip.saved { background: var(--amber); }
+  .pip.filing { background: var(--violet); animation: breathe .9s ease-in-out infinite; }
+  .pip.filed { background: var(--ok); }
+  .pip.error { background: var(--bad); }
+  .itext { flex: 1; min-width: 0; }
+  .isnip { color: #cfd2dd; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .istat { font: 11px ui-monospace, Menlo, monospace; color: var(--faint); margin-top: 2px;
+           overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .istat.filed { color: var(--ok); }
+  .istat.error { color: var(--bad); }
+  .ifile {
+    -webkit-app-region: no-drag; flex: none; border: 1px solid var(--line);
+    background: rgba(255,255,255,.05); color: var(--dim); border-radius: 6px;
+    font: 600 11px/1 -apple-system, system-ui; padding: 6px 8px; cursor: pointer;
+  }
+  .ifile:hover { border-color: var(--violet-line); color: #cbb8ff; }
+  .empty-list { padding: 4px 16px 12px; font-size: 12px; color: var(--faint); }
   .hide { display: none !important; }
 </style>
 </head>
@@ -96,34 +121,48 @@
     <span class="dot"></span>
     <span class="src" id="src">inbox</span>
     <span class="url" id="url"></span>
+    <button class="x" id="close" title="Close (esc)">✕</button>
   </header>
 
-  <div class="body" id="bodyRow">
+  <div class="capture" id="cap">
     <span class="mark empty" id="mark">Highlight text in any app, then press ⌘⇧K</span>
   </div>
-
-  <div class="state" id="busy"><span class="spin"></span><span>filing into the vault…</span></div>
-  <div class="state" id="done"></div>
-
-  <footer id="foot">
+  <div class="row" id="foot">
     <input id="note" placeholder="Add a note for your future self… (optional)" />
-    <button id="file"><span>File it</span><span class="ret">⏎</span></button>
-  </footer>
+    <button class="act" id="save"><span>Save</span><span class="ret">⏎</span></button>
+  </div>
+
+  <div class="sess">
+    <div class="sesshead">
+      <span id="sesscount">this session · 0</span>
+      <button class="fileall" id="fileall" disabled>File all</button>
+    </div>
+    <div class="empty-list" id="emptyList">Nothing saved yet. Saving is instant; filing runs the agent.</div>
+    <div class="list hide" id="list"></div>
+  </div>
 
 <script>
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
 let payload = { text: '', sourceApp: '', sourceUrl: '' };
+const session = [];           // survives for the life of the window
+let seq = 0;
 
-// Browser preview only — never fires under Electron, where preload defines window.inbox.
 const IN_ELECTRON = !!window.inbox;
 if (!IN_ELECTRON) {
   window.inbox = {
-    onSelection: (f) => { window.__fill = f; },
-    submit: async () => ({ ok: true, changedFiles: ['sources/attention-is-all-you-need.md'] }),
-    onSource: () => {}, onPending: () => {},
+    onSelection: (f) => { window.__fill = f; }, onSource: () => {}, onPending: () => {},
+    save: async () => ({ ok: true, inbox: 'inbox/2026-08-30-demo.md' }),
+    file: async () => ({ ok: true, changedFiles: ['sources/attention-is-all-you-need.md'] }),
     dismiss(){}, resize(){}, openVault(){},
   };
+}
+
+function fit() {
+  requestAnimationFrame(() => {
+    const h = Math.ceil(document.body.getBoundingClientRect().height);
+    if (h > 40) window.inbox.resize(h);
+  });
 }
 
 function paintSource(d) {
@@ -134,7 +173,6 @@ function paintSource(d) {
 }
 window.inbox.onSource(paintSource);
 
-// Window is already on screen while the selection is still being read.
 window.inbox.onPending(() => {
   payload = { text: '', sourceApp: '', sourceUrl: '' };
   $('src').textContent = 'inbox';
@@ -144,88 +182,129 @@ window.inbox.onPending(() => {
   m.className = 'mark reading';
   $('note').value = '';
   $('note').disabled = true;
-  $('file').disabled = true;
-  $('busy').classList.remove('on');
-  $('done').classList.remove('on');
-  $('foot').classList.remove('hide');
-  $('bodyRow').classList.remove('hide');
+  $('save').disabled = true;
   fit();
 });
 
 window.inbox.onSelection((d) => {
   payload = d || { text: '' };
   const has = !!(payload.text && payload.text.trim());
-
-  $('src').innerHTML = payload.sourceApp ? `from <b>${esc(payload.sourceApp)}</b>` : 'inbox';
-  $('url').textContent = payload.sourceUrl || '';
-
+  paintSource(payload);
   const m = $('mark');
   m.textContent = has ? payload.text.trim() : 'Highlight text in any app, then press ⌘⇧K';
   m.className = has ? 'mark' : 'mark empty';
-
   $('note').value = '';
   $('note').disabled = !has;
-  $('file').disabled = !has;
-  $('busy').classList.remove('on');
-  $('done').classList.remove('on');
-  $('foot').classList.remove('hide');
-  $('bodyRow').classList.remove('hide');
+  $('save').disabled = !has;
   if (has) setTimeout(() => $('note').focus(), 20);
   fit();
 });
 
-// The window must match the content exactly — any excess shows raw vibrancy
-// as a pale slab under the HUD.
-function fit() {
-  requestAnimationFrame(() => {
-    const h = Math.ceil(document.body.getBoundingClientRect().height);
-    if (h > 40) window.inbox.resize(h);
+function render() {
+  $('sesscount').textContent = `this session · ${session.length}`;
+  const unfiled = session.filter((i) => i.status === 'saved').length;
+  $('fileall').disabled = unfiled === 0;
+  $('fileall').textContent = unfiled ? `File all (${unfiled})` : 'File all';
+  $('emptyList').classList.toggle('hide', session.length > 0);
+  $('list').classList.toggle('hide', session.length === 0);
+
+  $('list').innerHTML = session.map((i) => {
+    const stat = i.status === 'filed' ? `→ ${esc(i.route)}`
+      : i.status === 'filing' ? 'filing — the agent is routing it…'
+      : i.status === 'error' ? esc(i.error || 'failed')
+      : 'in inbox · unfiled';
+    return `<div class="item">
+      <span class="pip ${i.status}"></span>
+      <span class="itext">
+        <div class="isnip">${esc(i.text.slice(0, 96))}</div>
+        <div class="istat ${i.status}">${stat}</div>
+      </span>
+      ${i.status === 'saved' ? `<button class="ifile" data-id="${i.id}">File</button>` : ''}
+    </div>`;
+  }).join('');
+
+  $('list').querySelectorAll('.ifile').forEach((b) => {
+    b.onclick = () => fileOne(session.find((x) => x.id === Number(b.dataset.id)));
   });
+  fit();
 }
 
-async function fileIt() {
-  if (!payload.text?.trim()) return window.inbox.dismiss();
-  $('foot').classList.add('hide');
-  $('bodyRow').classList.add('hide');
-  $('busy').classList.add('on');
-  fit();
+/** SAVE — instant. Writes to inbox/ and returns; no agent involved. */
+async function save() {
+  if (!payload.text?.trim()) return;
+  const item = {
+    id: ++seq, text: payload.text.trim(), note: $('note').value,
+    sourceApp: payload.sourceApp, sourceUrl: payload.sourceUrl,
+    status: 'saved', inbox: '', route: '', error: '',
+  };
+  session.unshift(item);
+  render();
+
+  // clear the capture area immediately — the round-trip is not worth waiting on
+  payload = { text: '', sourceApp: payload.sourceApp, sourceUrl: payload.sourceUrl };
+  $('mark').textContent = 'Highlight text in any app, then press ⌘⇧K';
+  $('mark').className = 'mark empty';
+  $('note').value = '';
+  $('note').disabled = true;
+  $('save').disabled = true;
+
+  const r = await window.inbox.save({
+    text: item.text, note: item.note, sourceApp: item.sourceApp, sourceUrl: item.sourceUrl,
+  });
+  if (r.ok) { item.inbox = r.inbox; }
+  else { item.status = 'error'; item.error = String(r.error).slice(0, 80); }
+  render();
+}
+
+/** FILE — slow. Codex reads the vault and decides where this belongs. */
+async function fileOne(item) {
+  if (!item || item.status !== 'saved' || !item.inbox) return;
+  item.status = 'filing';
+  render();
   try {
-    const r = await window.inbox.submit({ ...payload, note: $('note').value });
-    $('busy').classList.remove('on');
-    $('done').classList.add('on');
+    const r = await window.inbox.file({ inbox: item.inbox });
     if (r.ok) {
       const files = (r.changedFiles || []).filter((f) => !f.startsWith('inbox/'));
-      $('done').innerHTML = `<span style="color:var(--ok)">✓</span><span>filed to</span>` +
-        `<span class="route">${esc(files[0] || 'the vault')}</span>`;
-      fit();
-      setTimeout(() => window.inbox.dismiss(), 2000);
+      item.status = 'filed';
+      item.route = files[0] || 'the vault';
     } else {
-      $('done').innerHTML = `<span class="err">✕ ${esc(String(r.error).slice(0, 90))}</span>`;
-      setTimeout(() => window.inbox.dismiss(), 3000);
+      item.status = 'error'; item.error = String(r.error).slice(0, 80);
     }
   } catch {
-    $('busy').classList.remove('on');
-    $('done').classList.add('on');
-    $('done').innerHTML = `<span class="err">✕ server not running — npm run dev</span>`;
-    setTimeout(() => window.inbox.dismiss(), 3000);
+    item.status = 'error'; item.error = 'server unreachable';
   }
+  render();
 }
 
-$('file').addEventListener('click', fileIt);
+async function fileAll() {
+  for (const i of session.filter((x) => x.status === 'saved')) await fileOne(i);
+}
+
+$('save').onclick = save;
+$('fileall').onclick = fileAll;
+$('close').onclick = () => window.inbox.dismiss();
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') return window.inbox.dismiss();
-  if (e.key === 'Enter') { e.preventDefault(); fileIt(); }
+  if (e.key === 'Enter' && !$('save').disabled) { e.preventDefault(); save(); }
 });
 
-if (!IN_ELECTRON && new URLSearchParams(location.search).get('demo')) {
-  window.__fill({
+render();
+
+if (!IN_ELECTRON) {
+  const q = new URLSearchParams(location.search);
+  if (q.get('demo')) window.__fill({
     text: 'We propose a new simple network architecture, the Transformer, based solely on attention mechanisms, dispensing with recurrence and convolutions entirely.',
-    sourceApp: 'Safari',
-    sourceUrl: 'https://arxiv.org/abs/1706.03762',
+    sourceApp: 'Safari', sourceUrl: 'https://arxiv.org/abs/1706.03762',
   });
-}
-if (!IN_ELECTRON && new URLSearchParams(location.search).get('empty')) {
-  window.__fill({ text: '', sourceApp: 'Safari', sourceUrl: 'https://x.com/athreyaanand/status/2093406102679654873' });
+  if (q.get('session')) {
+    session.push(
+      { id: ++seq, text: 'Desire paths: worn tracks across grass where the paving does not go.', status: 'filed', route: 'topics/desire-paths.md', inbox: 'x' },
+      { id: ++seq, text: 'Progressive disclosure keeps an interface focused on the choices needed now.', status: 'filing', inbox: 'x' },
+      { id: ++seq, text: 'The Transformer dispenses with recurrence and convolutions entirely.', status: 'saved', inbox: 'x' },
+    );
+    window.__fill({ text: '', sourceApp: 'Safari', sourceUrl: 'https://arxiv.org/abs/1706.03762' });
+    render();
+  }
 }
 </script>
 </body>
