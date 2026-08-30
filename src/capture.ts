@@ -58,11 +58,37 @@ File it, obeying CLAUDE.md above. Decide ALL of:
 1. Route: ideas/ vs sources/ vs topics/ vs projects/
 2. Append to an existing note, or create a new one. SEARCH FIRST with 'rg "term" .'
    (always pass the "." — without a path rg reads stdin and silently finds nothing).
-   Appending to an existing hub note is usually more correct than a new file.
+   If a note on this source already exists, APPEND to it — do not make a second one.
 3. Kebab-case filename.
 4. Valid YAML frontmatter matching the templates. Reuse tags from ===TAGS=== above.
-5. Links: derived-from: or source-note: pointing at real files that exist.
-6. A prose summary IN THE USER'S OWN WORDS. Never paste large verbatim text.
+5. Links to real files that exist.
+
+STRUCTURE — this is not optional, match it exactly:
+
+## Summary
+
+Prose in the user's own words. Rewrite and extend it to account for this new
+highlight. This is the ONLY place you synthesize.
+
+## Notes
+
+- > the captured text, VERBATIM
+    - the user's note, if they wrote one, in plain text
+    - *your comment on that passage, in italics*
+
+The top-level bullet is a blockquote of the captured text copied EXACTLY —
+character for character, no trimming, no rewording, no fixing punctuation or
+capitalisation, no ellipses. It is the provenance record. If you change one word
+you have broken the note.
+
+The user's note goes in an indented child bullet, their words unedited.
+Your own comment goes in a second indented child bullet, wrapped in *asterisks*
+so it reads as italics — one or two sentences, and it must be clearly your voice.
+If the user wrote no note, omit that child bullet; still write yours.
+
+When appending to an existing note, ADD a new top-level bullet to the existing
+## Notes list and update ## Summary. Never rewrite or merge the bullets already
+there.
 
 HARD RULES:
 - NEVER write to ideas/raw/. It is the provenance record. Read only.

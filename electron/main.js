@@ -49,6 +49,50 @@ function frontAppAsync() {
 const sendCopy = () => osaAsync('tell application "System Events" to keystroke "c" using command down');
 
 /**
+ * Recolour the PAGE's selection highlight while capture is active, so the user
+ * can see at a glance that the tool is listening. There is no way to restyle
+ * another app's selection from outside, so for browsers we inject a ::selection
+ * rule into the page itself.
+ *
+ * Requires Safari > Settings > Developer > "Allow JavaScript from Apple Events"
+ * (or Chrome's View > Developer equivalent). Degrades silently when it is off —
+ * capture still works, the highlight is just the OS default colour.
+ */
+const HL = 'rgba(167,139,250,0.55)';
+const JS_ON =
+  "(function(){var i='inbox-hl';if(document.getElementById(i))return 1;" +
+  "var s=document.createElement('style');s.id=i;" +
+  `s.textContent='::selection{background:${HL} !important}::-moz-selection{background:${HL} !important}';` +
+  'document.documentElement.appendChild(s);return 1})()';
+const JS_OFF = "(function(){var e=document.getElementById('inbox-hl');if(e)e.remove();return 1})()";
+
+let injectedInto = '';
+
+function pageJs(appName, js) {
+  if (appName === 'Safari') {
+    return osaAsync(`tell application "Safari" to do JavaScript "${js}" in current tab of front window`);
+  }
+  if (/Chrome|Brave|Edge/i.test(appName)) {
+    return osaAsync(`tell application "${appName}" to execute active tab of front window javascript "${js}"`);
+  }
+  return Promise.resolve('');
+}
+
+async function paintSelection(appName) {
+  const r = await pageJs(appName, JS_ON);
+  injectedInto = String(r).includes('rror') ? '' : appName;
+  if (!injectedInto && /Safari|Chrome|Brave|Edge/i.test(appName)) {
+    console.log('[hl] page injection unavailable — enable "Allow JavaScript from Apple Events"');
+  }
+}
+
+async function unpaintSelection() {
+  if (!injectedInto) return;
+  await pageJs(injectedInto, JS_OFF).catch(() => {});
+  injectedInto = '';
+}
+
+/**
  * Live selection tracking.
  *
  * Safari does not expose web-content selections through AXSelectedText, so the
@@ -181,6 +225,7 @@ function place() {
 
 async function hide() {
   stopTracking();
+  await unpaintSelection();
   win?.hide();
   // Tracking clobbers the clipboard repeatedly; put back what was there.
   if (originalClip) { try { await clipboard.writeText(originalClip); } catch {} }
@@ -206,6 +251,7 @@ async function summon() {
     // Never focus here. The source app keeps focus so Cmd-C reaches the page.
     stopTracking();
     trackLoop();
+    paintSelection(appName);
 
     const url = await browserUrlAsync(appName);
     if (win && !win.isDestroyed()) win.webContents.send('capture:source', { sourceApp: appName, sourceUrl: url });
