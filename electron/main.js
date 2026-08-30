@@ -297,7 +297,21 @@ ipcMain.on('capture:resize', (_e, h) => {
   if (!win) return;
   const b = win.getBounds();
   // grow downward from the top-right anchor; never move x/y
-  win.setBounds({ x: b.x, y: b.y, width: b.width, height: Math.max(150, Math.min(640, Math.round(h))) }, false);
+  win.setBounds({ x: b.x, y: b.y, width: b.width, height: Math.max(150, Math.min(760, Math.round(h))) }, false);
+});
+
+/** Capture tab is narrow; the dashboard tab needs room for the prototype grid. */
+ipcMain.on('capture:shape', (_e, mode) => {
+  if (!win) return;
+  const { workArea } = screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
+  const wide = mode === 'dash';
+  const width = wide ? Math.min(1080, workArea.width - 48) : 430;
+  const height = wide ? Math.min(760, workArea.height - 48) : 320;
+  win.setBounds({
+    x: Math.round(workArea.x + workArea.width - width - 24),
+    y: Math.round(workArea.y + 24),
+    width, height,
+  }, false);
 });
 ipcMain.on('capture:open-vault', () => shell.openPath(path.join(__dirname, '..', 'vault')));
 ipcMain.on('capture:open-dashboard', () => shell.openExternal(`http://localhost:${PORT}`));

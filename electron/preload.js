@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld('inbox', {
   dismiss: () => ipcRenderer.send('capture:dismiss'),
   resume: () => ipcRenderer.send('capture:resume'),
   resize: (h) => ipcRenderer.send('capture:resize', h),
+  shape: (mode) => ipcRenderer.send('capture:shape', mode),
   openVault: () => ipcRenderer.send('capture:open-vault'),
   openDashboard: () => ipcRenderer.send('capture:open-dashboard'),
 });

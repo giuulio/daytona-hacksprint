@@ -57,6 +57,11 @@
   .fail { color: var(--bad); padding: 18px; font-size: 13px; }
   .badge { font-size: 11px; padding: 2px 7px; border-radius: 4px; background: #1d2029; color: var(--dim); margin-left: 8px; }
   .badge.live { color: var(--ok); }
+  .embed body { padding: 18px 20px 28px; }
+  .embed h1, .embed .sub, .embed #capSection { display: none; }
+  .embed section { margin-bottom: 0; }
+  .embed .grid { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+  .embed iframe { height: 260px; }
 </style>
 </head>
 <body>
@@ -64,7 +69,7 @@
   <h1>inbox</h1>
   <p class="sub">Everything I read, filed automatically — then mined for the ideas hiding between unrelated notes.</p>
 
-  <section>
+  <section id="capSection">
     <h2>1 · Capture</h2>
     <textarea id="text" placeholder="Paste anything. The macOS shortcut sends here too."></textarea>
     <input id="note" placeholder="Optional note to your future self" />
@@ -86,6 +91,12 @@
 
 <script>
 const $ = (id) => document.getElementById(id);
+
+// ?embed=1 — rendered inside the HUD's Synthesize tab, where capture already
+// has its own surface and the outer chrome is redundant.
+if (new URLSearchParams(location.search).get('embed')) {
+  document.documentElement.classList.add('embed');
+}
 
 $('capture').onclick = async () => {
   const text = $('text').value.trim();
