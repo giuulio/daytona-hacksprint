@@ -125,7 +125,7 @@
   </header>
 
   <div class="capture" id="cap">
-    <span class="mark empty" id="mark">Highlight text in any app, then press ⌘⇧K</span>
+    <span class="mark empty" id="mark">Highlight anything — it appears here live. ⏎ or Save to keep it.</span>
   </div>
   <div class="row" id="foot">
     <input id="note" placeholder="Add a note for your future self… (optional)" />
@@ -178,7 +178,7 @@ window.inbox.onPending(() => {
   $('src').textContent = 'inbox';
   $('url').textContent = '';
   const m = $('mark');
-  m.textContent = 'reading selection…';
+  m.textContent = 'tracking your selection — highlight anything';
   m.className = 'mark reading';
   $('note').value = '';
   $('note').disabled = true;
@@ -186,17 +186,18 @@ window.inbox.onPending(() => {
   fit();
 });
 
+// Fires repeatedly while the selection is being tracked live, so it must never
+// clear the note field or grab focus — doing either would fight the user.
 window.inbox.onSelection((d) => {
-  payload = d || { text: '' };
+  payload = { ...payload, ...(d || {}) };
   const has = !!(payload.text && payload.text.trim());
   paintSource(payload);
   const m = $('mark');
-  m.textContent = has ? payload.text.trim() : 'Highlight text in any app, then press ⌘⇧K';
+  m.textContent = has ? payload.text.trim()
+    : 'Highlight anything — it appears here live. ⏎ or Save to keep it.';
   m.className = has ? 'mark' : 'mark empty';
-  $('note').value = '';
   $('note').disabled = !has;
   $('save').disabled = !has;
-  if (has) setTimeout(() => $('note').focus(), 20);
   fit();
 });
 
@@ -242,7 +243,7 @@ async function save() {
 
   // clear the capture area immediately — the round-trip is not worth waiting on
   payload = { text: '', sourceApp: payload.sourceApp, sourceUrl: payload.sourceUrl };
-  $('mark').textContent = 'Highlight text in any app, then press ⌘⇧K';
+  $('mark').textContent = 'Highlight anything — it appears here live. ⏎ or Save to keep it.';
   $('mark').className = 'mark empty';
   $('note').value = '';
   $('note').disabled = true;

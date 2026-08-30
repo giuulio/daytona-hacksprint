@@ -49,6 +49,39 @@ function frontAppAsync() {
 const sendCopy = () => osaAsync('tell application "System Events" to keystroke "c" using command down');
 
 /**
+ * Live selection tracking.
+ *
+ * Safari does not expose web-content selections through AXSelectedText, so the
+ * only way to read a selection is Cmd-C. That means the HUD must NOT hold focus
+ * while tracking — if it does, the copy lands in the HUD instead of the page,
+ * which is exactly the regression this replaces.
+ *
+ * So: the window shows inactive and polls. The moment the user clicks into it
+ * (to type a note or hit Save) it takes focus, tracking stops, and the last
+ * selection is frozen.
+ */
+let track = null;
+let originalClip = '';
+
+function stopTracking() {
+  if (track) { clearTimeout(track); track = null; }
+}
+
+async function trackLoop(sourceApp) {
+  if (!win || !win.isVisible() || win.isFocused()) { stopTracking(); return; }
+  try {
+    await sendCopy();
+    const now = (await clipboard.readText()) || '';
+    if (now && now !== lastClip) {
+      lastClip = now;
+      if (win && !win.isDestroyed()) win.webContents.send('capture:selection', { text: now, sourceApp });
+    }
+  } catch { /* keep polling */ }
+  if (win?.isVisible() && !win.isFocused()) track = setTimeout(() => trackLoop(sourceApp), 500);
+  else stopTracking();
+}
+
+/**
  * The FIRST clipboard.readText() after idle costs 500-1800ms — a cold pasteboard
  * wake. Subsequent reads are ~15ms. So keep it warm on a timer and keep the last
  * value, which also means summon() already has `prev` and never pays that cost.
@@ -56,6 +89,7 @@ const sendCopy = () => osaAsync('tell application "System Events" to keystroke "
 let lastClip = '';
 function startClipboardWarmer() {
   const tick = async () => {
+    if (track) return;                 // the tracking loop owns lastClip while it runs
     try { lastClip = (await clipboard.readText()) || ''; } catch { /* ignore */ }
   };
   tick();
@@ -106,6 +140,10 @@ function createWindow() {
     maximizable: false,
     fullscreenable: false,
     skipTaskbar: true,
+    // NSPanel rather than NSWindow: macOS only lets a panel float over another
+    // app's full-screen space. A plain window is confined to the desktop space
+    // no matter what always-on-top level it is given.
+    type: 'panel',
     show: false,
     roundedCorners: true,
     webPreferences: {
@@ -124,8 +162,11 @@ function createWindow() {
   // while reading. It closes on the X button or esc, nothing else.
 }
 
-function hide() {
+async function hide() {
+  stopTracking();
   win?.hide();
+  // Tracking clobbers the clipboard repeatedly; put back what was there.
+  if (originalClip) { try { await clipboard.writeText(originalClip); } catch {} }
 }
 
 async function summon() {
@@ -140,35 +181,16 @@ async function summon() {
     win.webContents.send('capture:pending');
     const tShown = Date.now();
 
-    // Warmed by the timer, so no cold pasteboard read on the critical path.
-    const prev = lastClip;
+    originalClip = lastClip;
+    const appName = await frontAppAsync();   // before any focus change
+    console.log(`[summon] visible in ${tShown - t0}ms app=${JSON.stringify(appName)} — tracking selection`);
 
-    // Must resolve BEFORE win.focus() below, or lsappinfo reports the HUD itself
-    // as the frontmost app. Started here, awaited once the text is in hand.
-    const appP = frontAppAsync();
+    // Never focus here. The source app keeps focus so Cmd-C reaches the page.
+    stopTracking();
+    trackLoop(appName);
 
-    await sendCopy();
-    const tPoll = Date.now();
-    const text = await grabSelection(prev);
-    const tGrab = Date.now();
-
-    if (text) await restoreClipboard(prev, text); // nothing copied ⇒ nothing to restore
-
-    const appName = await appP;
-    win.focus();
-    win.webContents.send('capture:selection', { text, sourceApp: appName, sourceUrl: '' });
-    console.log(
-      `[summon] visible in ${tShown - t0}ms, text at ${tGrab - t0}ms ` +
-      `(copy ${tPoll - tShown}, poll ${tGrab - tPoll}) chars=${text.length}`,
-    );
-
-    // Second pass: the URL, which targets the app by name and so is safe to run
-    // after focus has moved.
     const url = await browserUrlAsync(appName);
-    if (win && !win.isDestroyed()) {
-      win.webContents.send('capture:source', { sourceApp: appName, sourceUrl: url });
-    }
-    console.log(`[summon] source +${Date.now() - tGrab}ms app=${JSON.stringify(appName)} url=${JSON.stringify(url)}`);
+    if (win && !win.isDestroyed()) win.webContents.send('capture:source', { sourceApp: appName, sourceUrl: url });
   } catch (e) {
     console.error('[summon] failed:', e?.message ?? e);
   }
