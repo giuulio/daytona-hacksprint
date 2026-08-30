@@ -1,16 +1,13 @@
 # inbox
 
-![inbox](docs/screenshot.png)
+An end-to-end knowledge base manager: highlight any text from articles, posts or
+papers and Codex files it into your Obsidian vault — then builds novel prototypes
+from what you have been reading.
 
 **Everyone has the same models. The only durable edge is context.**
 
-`inbox` captures what you read, files it automatically into a plain-markdown
-knowledge vault, and then mines that vault for the ideas hiding *between*
-unrelated notes — spinning up a sandbox per idea that builds a working prototype
-you can click.
-
-Built for the Daytona hacksprint. The agent doing the filing and the building is
-the **Codex CLI**, running inside **Daytona** sandboxes.
+Built for the Daytona HackSprint, London, 30 August 2026. The agent doing both the
+filing and the building is the **Codex CLI**, running inside **Daytona** sandboxes.
 
 ---
 
@@ -90,6 +87,13 @@ A no-Electron fallback exists as a macOS Quick Action:
 → Keyboard Shortcuts → Services.
 
 ---
+
+## Layer 3, running
+
+![synthesize](docs/synthesize.png)
+
+Each card is an idea the agent found by reading the whole vault, the exact notes
+it drew on, and a live prototype built for it in its own sandbox.
 
 ## How Daytona is used
 
