@@ -57,6 +57,22 @@
   .fail { color: var(--bad); padding: 18px; font-size: 13px; }
   .badge { font-size: 11px; padding: 2px 7px; border-radius: 4px; background: #1d2029; color: var(--dim); margin-left: 8px; }
   .badge.live { color: var(--ok); }
+  .expand { position: absolute; top: 12px; right: 12px; z-index: 3;
+            background: rgba(13,14,18,.82); color: var(--fg); border: 1px solid var(--line);
+            border-radius: 7px; padding: 6px 9px; font: 600 12px/1 inherit; cursor: pointer; }
+  .expand:hover { border-color: var(--accent); color: var(--accent); }
+  .card { position: relative; }
+  #full { position: fixed; inset: 0; z-index: 50; background: #0d0e12; display: none;
+          flex-direction: column; }
+  #full.on { display: flex; }
+  #full .bar { display: flex; align-items: center; gap: 12px; padding: 10px 14px;
+               border-bottom: 1px solid var(--line); flex: none; }
+  #full .bar h3 { margin: 0; font-size: 14px; }
+  #full .bar .cites { margin-left: 4px; }
+  #full button { margin-left: auto; background: transparent; color: var(--fg);
+                 border: 1px solid var(--line); border-radius: 7px; padding: 7px 11px;
+                 font: 600 12px/1 inherit; cursor: pointer; }
+  #full iframe { flex: 1; width: 100%; border: 0; }
   .embed, .embed body { height: 100%; }
   .embed body { padding: 16px 18px 24px; }
   .embed h1, .embed .sub, .embed #capSection { display: none; }
@@ -91,6 +107,15 @@
     <div class="grid" id="grid"></div>
   </section>
 </main>
+
+<div id="full">
+  <div class="bar">
+    <h3 id="fullTitle"></h3>
+    <div class="cites" id="fullCites"></div>
+    <button id="fullClose">Close ✕</button>
+  </div>
+  <iframe id="fullFrame" src="about:blank"></iframe>
+</div>
 
 <script>
 const $ = (id) => document.getElementById(id);
@@ -133,12 +158,38 @@ function render(list) {
         <p style="color:#6c7086">${esc(p.whyYou || '')}</p>
         <div class="cites">${(p.sourceNotes || []).map((f) => `<span class="cite">${esc(f)}</span>`).join('')}</div>
       </header>
+      ${p.url || p.slug ? `<button class="expand" data-src="${p.url || `/p/${p.slug}`}" data-title="${esc(p.title)}">⤢ Full screen</button>` : ''}
       ${p.url ? `<iframe src="${p.url}" loading="lazy"></iframe>`
         : p.slug ? `<iframe src="/p/${p.slug}" loading="lazy"></iframe>`
         : `<div class="fail">${esc(p.error || 'no prototype')}</div>`}
     </div>`).join('');
+  wireExpand();
 }
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+// Prototypes are the point — they need to be viewable at full size, not only
+// as a 320px card preview.
+function openFull(src, title, cites) {
+  $('fullTitle').textContent = title || '';
+  $('fullCites').innerHTML = (cites || []).map((f) => `<span class="cite">${esc(f)}</span>`).join('');
+  $('fullFrame').src = src;
+  $('full').classList.add('on');
+}
+function closeFull() {
+  $('full').classList.remove('on');
+  $('fullFrame').src = 'about:blank';
+}
+function wireExpand() {
+  document.querySelectorAll('.expand').forEach((b) => {
+    b.onclick = (e) => {
+      e.stopPropagation();
+      const card = b.closest('.card');
+      const cites = [...card.querySelectorAll('.cite')].map((c) => c.textContent);
+      openFull(b.dataset.src, b.dataset.title, cites);
+    };
+  });
+}
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeFull(); });
 
 // Streamed synthesis. Ideas + citations arrive ~45s before the prototypes, so
 // cards render early and each fills in as its sandbox boots and Codex writes.
@@ -191,7 +242,11 @@ $('synth').onclick = () => {
           el(d.slug).innerHTML = `<span class="ok">✓</span> live · ${d.lines} lines · ${(d.ms / 1000).toFixed(1)}s`;
           const f = document.createElement('iframe');
           f.src = d.url; f.loading = 'lazy';
-          card.appendChild(f);
+          const b = document.createElement('button');
+          b.className = 'expand'; b.textContent = '⤢ Full screen';
+          b.dataset.src = d.url; b.dataset.title = card.querySelector('h3')?.textContent || '';
+          card.appendChild(b); card.appendChild(f);
+          wireExpand();
         }
         say(`${d.slug} live in ${(d.ms / 1000).toFixed(1)}s`);
         break;
@@ -230,6 +285,7 @@ async function loadCached() {
   render(c.map((x) => ({ ...x, ok: false })));
 }
 $('loadCached').onclick = loadCached;
+$('fullClose').onclick = closeFull;
 
 // ?demo=1 renders the warm cached grid on load — the path that does not depend
 // on live generation succeeding.
