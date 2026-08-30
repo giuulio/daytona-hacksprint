@@ -1,0 +1,10 @@
+{
+  "title": "Detour Garden",
+  "oneLiner": "A tiny task-interface simulator that records repeated user detours, draws them as worn paths, and offers a one-click proposed default layout after enough evidence accumulates.",
+  "whyYou": "Urban desire paths turn a product telemetry problem into a legible physical metaphor, while progressive disclosure supplies the rule for what should become the new paved route.",
+  "sourceNotes": [
+    "topics/desire-paths.md",
+    "sources/telemetry-driven-design-talk.md",
+    "sources/progressive-disclosure-nielsen-norman-group.md"
+  ]
+}

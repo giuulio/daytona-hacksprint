@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>inbox</title>
+<style>
+  :root {
+    --bg: #0d0e12; --panel: #15171d; --line: #262a34;
+    --fg: #e6e8ee; --dim: #8b90a0; --accent: #7aa2f7; --ok: #9ece6a; --bad: #f7768e;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 15px/1.6 ui-sans-serif, -apple-system, "Inter", system-ui, sans-serif;
+    padding: 48px 32px 96px;
+  }
+  main { max-width: 1180px; margin: 0 auto; }
+  h1 { font-size: 20px; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 4px; }
+  .sub { color: var(--dim); margin: 0 0 40px; }
+  section { margin-bottom: 56px; }
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--dim); font-weight: 600; margin: 0 0 16px; }
+  textarea, input {
+    width: 100%; background: var(--panel); color: var(--fg);
+    border: 1px solid var(--line); border-radius: 8px; padding: 14px; font: inherit; margin-bottom: 12px;
+  }
+  textarea { min-height: 120px; resize: vertical; }
+  button {
+    background: var(--accent); color: #0d0e12; border: 0; border-radius: 8px;
+    padding: 12px 22px; font: 600 15px/1 inherit; cursor: pointer;
+  }
+  button:disabled { opacity: 0.45; cursor: default; }
+  button.ghost { background: transparent; color: var(--fg); border: 1px solid var(--line); }
+  pre {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+    padding: 16px; overflow-x: auto; font: 13px/1.55 ui-monospace, "SF Mono", Menlo, monospace;
+    color: var(--dim); white-space: pre-wrap; margin: 16px 0 0;
+  }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; }
+  .card header { padding: 18px 18px 14px; }
+  .card h3 { margin: 0 0 6px; font-size: 16px; }
+  .card p { margin: 0 0 10px; color: var(--dim); font-size: 14px; }
+  .cites { display: flex; flex-wrap: wrap; gap: 6px; }
+  .cite { font: 11px ui-monospace, Menlo, monospace; background: #1d2029; border: 1px solid var(--line); color: var(--accent); padding: 3px 7px; border-radius: 5px; }
+  iframe { width: 100%; height: 320px; border: 0; border-top: 1px solid var(--line); background: #000; }
+  .status { font-size: 13px; color: var(--dim); margin-top: 12px; min-height: 20px; }
+  .fail { color: var(--bad); padding: 18px; font-size: 13px; }
+  .badge { font-size: 11px; padding: 2px 7px; border-radius: 4px; background: #1d2029; color: var(--dim); margin-left: 8px; }
+  .badge.live { color: var(--ok); }
+</style>
+</head>
+<body>
+<main>
+  <h1>inbox</h1>
+  <p class="sub">Everything I read, filed automatically — then mined for the ideas hiding between unrelated notes.</p>
+
+  <section>
+    <h2>1 · Capture</h2>
+    <textarea id="text" placeholder="Paste anything. The macOS shortcut sends here too."></textarea>
+    <input id="note" placeholder="Optional note to your future self" />
+    <input id="url" placeholder="Source URL (optional)" />
+    <button id="capture">Capture &amp; file</button>
+    <div class="status" id="capStatus"></div>
+    <pre id="diff" hidden></pre>
+  </section>
+
+  <section>
+    <h2>2 · Synthesize</h2>
+    <button id="synth">Find overlaps &amp; build prototypes</button>
+    <button id="loadCached" class="ghost">Load cached</button>
+    <div class="status" id="synthStatus"></div>
+    <div class="grid" id="grid"></div>
+  </section>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+
+$('capture').onclick = async () => {
+  const text = $('text').value.trim();
+  if (!text) return;
+  $('capture').disabled = true;
+  $('capStatus').textContent = 'filing…';
+  const t0 = Date.now();
+  try {
+    const r = await fetch('/capture', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ text, note: $('note').value, sourceUrl: $('url').value, sourceApp: 'web' }),
+    }).then((r) => r.json());
+    if (r.ok) {
+      $('capStatus').textContent = `filed in ${((Date.now() - t0) / 1000).toFixed(1)}s → ${r.changedFiles.join(', ')}`;
+      $('diff').hidden = false;
+      $('diff').textContent = r.diffStat || '(no diff)';
+      $('text').value = ''; $('note').value = ''; $('url').value = '';
+    } else {
+      $('capStatus').textContent = 'failed: ' + r.error;
+    }
+  } catch (e) { $('capStatus').textContent = 'failed: ' + e.message; }
+  $('capture').disabled = false;
+};
+
+function render(list) {
+  $('grid').innerHTML = list.map((p) => `
+    <div class="card">
+      <header>
+        <h3>${esc(p.title)}${p.ok === false ? '<span class="badge">cached</span>' : '<span class="badge live">live sandbox</span>'}</h3>
+        <p>${esc(p.oneLiner || '')}</p>
+        <p style="color:#6c7086">${esc(p.whyYou || '')}</p>
+        <div class="cites">${(p.sourceNotes || []).map((f) => `<span class="cite">${esc(f)}</span>`).join('')}</div>
+      </header>
+      ${p.url ? `<iframe src="${p.url}" loading="lazy"></iframe>`
+        : p.slug ? `<iframe src="/p/${p.slug}" loading="lazy"></iframe>`
+        : `<div class="fail">${esc(p.error || 'no prototype')}</div>`}
+    </div>`).join('');
+}
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+$('synth').onclick = async () => {
+  $('synth').disabled = true;
+  $('synthStatus').textContent = 'reading the vault, finding overlaps, spinning up sandboxes…';
+  const t0 = Date.now();
+  try {
+    const r = await fetch('/synthesize', { method: 'POST' }).then((r) => r.json());
+    if (r.ok) {
+      $('synthStatus').textContent = `${r.prototypes.filter((p) => p.ok).length}/${r.prototypes.length} prototypes live · ${((Date.now() - t0) / 1000).toFixed(1)}s · ${r.sandboxesCreated} sandboxes created`;
+      render(r.prototypes);
+    } else {
+      $('synthStatus').textContent = 'failed: ' + r.error + ' — showing cached';
+      render(r.cached || []);
+    }
+  } catch (e) { $('synthStatus').textContent = 'failed: ' + e.message; }
+  $('synth').disabled = false;
+};
+
+async function loadCached() {
+  const c = await fetch('/api/cached').then((r) => r.json());
+  $('synthStatus').textContent = `${c.length} cached prototype(s)`;
+  render(c.map((x) => ({ ...x, ok: false })));
+}
+$('loadCached').onclick = loadCached;
+
+// ?demo=1 renders the warm cached grid on load — the path that does not depend
+// on live generation succeeding.
+if (new URLSearchParams(location.search).get('demo')) loadCached();
+</script>
+</body>
+</html>

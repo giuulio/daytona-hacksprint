@@ -1,0 +1,10 @@
+{
+  "title": "Phase-Locked Reader",
+  "oneLiner": "A single-page reading surface whose type size, contrast, warmth, and subtle motion evolve through a simulated day using overlapping non-repeating timing loops.",
+  "whyYou": "Circadian physiology and ambient composition meet here: both describe work designed for a changing state of attention rather than a fixed moment or a binary theme.",
+  "sourceNotes": [
+    "sources/circadian-light-and-alertness.md",
+    "sources/generative-ambient-music.md",
+    "sources/legibility-at-low-contrast.md"
+  ]
+}

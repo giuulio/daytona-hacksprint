@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Detour Garden</title>
+<style>
+  :root{--ink:#e9ebdc;--muted:#9ca594;--grass:#17231b;--grass2:#203224;--soil:#b88a56;--line:#405442;--card:#263629}
+  *{box-sizing:border-box} body{margin:0;background:#0d1410;color:var(--ink);font:15px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  main{width:min(1080px,calc(100% - 40px));margin:0 auto;padding:52px 0 42px} header{display:flex;justify-content:space-between;gap:24px;align-items:start;margin-bottom:35px}
+  h1{font:500 34px/1.1 Georgia,serif;letter-spacing:-.03em;margin:0 0 9px}.origin{margin:0;color:var(--muted);font-size:12px}.badge{color:#d9c49d;border:1px solid #6f6044;border-radius:99px;padding:6px 10px;font-size:11px;white-space:nowrap}
+  .garden{position:relative;min-height:495px;border:1px solid #384b39;border-radius:22px;overflow:hidden;background:radial-gradient(circle at 65% 35%,#294329 0,#1b2d20 43%,#142119 100%);box-shadow:0 20px 70px #0008}
+  canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.copy{position:absolute;left:30px;top:27px;max-width:360px;z-index:2}.copy p{margin:5px 0;color:#b9c4b5;font-size:13px}.seed{font-size:11px;text-transform:uppercase;letter-spacing:.13em;color:#cdb98e}
+  .task{position:absolute;z-index:3;background:#26392b;border:1px solid #60715c;color:var(--ink);padding:10px 13px;border-radius:9px;cursor:pointer;font:inherit;font-size:12px;box-shadow:0 4px 14px #0004;transition:.18s transform,.18s background}.task:hover{transform:translateY(-2px);background:#344b37}.task:focus-visible{outline:2px solid #e2ca8d;outline-offset:3px}.task small{display:block;color:#a8b5a4;margin-top:2px;font-size:10px}
+  #inbox{left:8%;top:42%}#search{right:8%;top:25%}#export{right:13%;bottom:13%}#report{left:13%;bottom:12%}.destination{position:absolute;z-index:3;left:50%;top:51%;transform:translate(-50%,-50%);width:185px;text-align:center;background:#d5c394;color:#1c2116;border:0;border-radius:50%;aspect-ratio:1;cursor:pointer;font:600 15px Georgia,serif;box-shadow:0 0 0 10px #d5c39420,0 14px 30px #0005;transition:.2s}.destination:hover{box-shadow:0 0 0 15px #d5c39424,0 14px 30px #0005}.destination span{display:block;font:10px ui-monospace,monospace;margin-top:7px;opacity:.7}
+  .panel{display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center;margin-top:22px;padding:17px 18px;border:1px solid #344536;background:#121b14;border-radius:13px}.reading{font-size:13px;color:#c3cdc0}.reading strong{color:#e5d5a9;font-weight:500}.controls{display:flex;gap:8px}.controls button{border:1px solid #596957;background:#233025;color:#dce4d8;border-radius:7px;padding:8px 10px;font:inherit;font-size:11px;cursor:pointer}.controls button:hover{background:#354838}.controls .pave{display:none;background:#c8b178;color:#182016;border-color:#dac798}.controls .pave.show{display:block}.legend{display:flex;gap:18px;margin:19px 2px 0;color:#879286;font-size:11px}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--soil);margin-right:6px}.dot.paved{background:#d6c391}
+  @media(max-width:620px){main{width:min(100% - 24px,1080px);padding-top:28px}header{display:block}.badge{display:inline-block;margin-top:18px}.garden{min-height:540px}.copy{left:19px;top:20px;max-width:260px}.panel{grid-template-columns:1fr}.controls{justify-content:space-between}}
+</style>
+<main>
+  <header><div><h1>Detour Garden</h1><p class="origin">Synthesised from <em>Desire paths</em>, <em>Instrument the workaround</em>, and <em>Progressive disclosure</em>.</p></div><span class="badge" id="season">observing / 0 detours</span></header>
+  <section class="garden" id="garden" aria-label="A garden of task routes">
+    <canvas id="paths"></canvas><div class="copy"><div class="seed">today’s task</div><p>Prepare the weekly update. Take the route you would actually use.</p></div>
+    <button class="task" id="inbox">Open inbox<small>find the source</small></button><button class="task" id="search">Search archive<small>look it up again</small></button><button class="task" id="export">Export sheet<small>work around it</small></button><button class="task" id="report">Draft report<small>start here</small></button>
+    <button class="destination" id="destination">Weekly update<span>finish task</span></button>
+  </section>
+  <section class="panel"><div class="reading" id="reading">Choose a starting place, then finish the task. We only make a route official after it is walked repeatedly.</div><div class="controls"><button id="reset">clear season</button><button class="pave" id="pave">pave this path</button></div></section>
+  <div class="legend"><span><i class="dot"></i>worn by observed detours</span><span><i class="dot paved"></i>an offered default, never forced</span></div>
+</main>
+<script>
+  const garden=document.querySelector('#garden'), canvas=document.querySelector('#paths'), ctx=canvas.getContext('2d');
+  const destination=document.querySelector('#destination'), reading=document.querySelector('#reading'), season=document.querySelector('#season'), pave=document.querySelector('#pave');
+  let routes=JSON.parse(localStorage.detourGarden||'[]'), chosen=null, paved=localStorage.detourPaved==='yes';
+  const buttons=[...document.querySelectorAll('.task')];
+  function point(el){const a=el.getBoundingClientRect(), b=garden.getBoundingClientRect();return{x:a.left-b.left+a.width/2,y:a.top-b.top+a.height/2}}
+  function size(){const r=garden.getBoundingClientRect(),d=devicePixelRatio;canvas.width=r.width*d;canvas.height=r.height*d;ctx.setTransform(d,0,0,d,0,0);draw()}
+  function curve(a,b,route,official=false){const bend=route==='export'?-80:route==='search'?55:route==='report'?-50:-45;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.bezierCurveTo(a.x+bend,a.y+(b.y-a.y)*.25,b.x+bend,b.y-(b.y-a.y)*.25,b.x,b.y);ctx.strokeStyle=official?'#d5c394':'#b88a56';ctx.lineWidth=official?13:Math.min(11,2+routes.filter(x=>x===route).length*1.7);ctx.globalAlpha=official?.9:.17;ctx.lineCap='round';ctx.stroke();ctx.globalAlpha=1}
+  function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);const end=point(destination);[...new Set(routes)].forEach(route=>{const el=document.querySelector('#'+route);curve(point(el),end,route,false)});if(paved){const r=most();if(r)curve(point(document.querySelector('#'+r)),end,r,true)}}
+  function most(){return buttons.map(b=>b.id).sort((a,b)=>routes.filter(x=>x===b).length-routes.filter(x=>x===a).length)[0]}
+  function update(){const common=most(),n=routes.filter(x=>x===common).length;season.textContent=`observing / ${routes.length} detour${routes.length===1?'':'s'}`;pave.classList.toggle('show',n>=3&&!paved);if(paved)reading.innerHTML=`<strong>A new paved route is available.</strong> The repeated ${common.replace(/\b\w/g,c=>c.toUpperCase())} detour is now the gentle default; every other path still works.`;else if(n>=3)reading.innerHTML=`<strong>Evidence has accumulated.</strong> ${n} people took the same detour. You can offer it as a default without removing the rest.`;else reading.textContent=chosen?'Now finish the task in the center — this route will be recorded as a detour.':'Choose a starting place, then finish the task. We only make a route official after it is walked repeatedly.';draw()}
+  buttons.forEach(b=>b.onclick=()=>{chosen=b.id;buttons.forEach(x=>x.style.background='');b.style.background='#496047';update()});
+  destination.onclick=()=>{if(!chosen){reading.textContent='Pick the place you begin when preparing this update.';return}routes.push(chosen);localStorage.detourGarden=JSON.stringify(routes);chosen=null;buttons.forEach(x=>x.style.background='');update()};
+  pave.onclick=()=>{paved=true;localStorage.detourPaved='yes';update()};document.querySelector('#reset').onclick=()=>{routes=[];paved=false;localStorage.removeItem('detourGarden');localStorage.removeItem('detourPaved');update()};
+  addEventListener('resize',size);size();update();
+</script>
+</html>

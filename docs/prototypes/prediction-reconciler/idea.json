@@ -1,0 +1,10 @@
+{
+  "title": "Prediction Reconciler",
+  "oneLiner": "A timeline playground that lets someone log an intervention and later merge its predicted and observed outcomes, making the uncertainty and attribution choices visible.",
+  "whyYou": "The vault pairs slow, destructive fermentation feedback with distributed systems' explicit reconciliation of divergent state, suggesting that a practical log needs a merge step rather than just more capture.",
+  "sourceNotes": [
+    "sources/sourdough-timing-notes.md",
+    "sources/eventual-consistency-primer.md",
+    "topics/slow-feedback-loops.md"
+  ]
+}

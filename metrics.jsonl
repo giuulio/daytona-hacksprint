@@ -1,0 +1,57 @@
+{"t":"2026-08-30T12:22:58.973Z","k":"cold_start_ms","v":1136}
+{"t":"2026-08-30T12:25:12.520Z","k":"cold_start_ms","v":1039}
+{"t":"2026-08-30T12:26:58.598Z","k":"cold_start_ms","v":1182}
+{"t":"2026-08-30T12:28:22Z","k":"cold_start_ms","v":968}
+{"t":"2026-08-30T12:28:22Z","k":"preview_iframeable_public_true","v":true}
+{"t":"2026-08-30T12:28:22Z","k":"snapshot_build_s","v":88.1}
+{"t":"2026-08-30T12:35:35.658Z","k":"vault_sandbox_create_ms","v":1113}
+{"t":"2026-08-30T12:35:54.944Z","k":"codex_exec_ms","v":18120}
+{"t":"2026-08-30T12:35:55.089Z","k":"capture_total_ms","v":20545}
+{"t":"2026-08-30T12:52:06.255Z","k":"codex_auth","v":"chatgpt"}
+{"t":"2026-08-30T12:52:46.304Z","k":"codex_exec_ms","v":39972}
+{"t":"2026-08-30T12:52:46.453Z","k":"capture_total_ms","v":40955}
+{"t":"2026-08-30T12:53:04.822Z","k":"codex_auth","v":"chatgpt"}
+{"t":"2026-08-30T12:53:45.156Z","k":"codex_exec_ms","v":40254}
+{"t":"2026-08-30T12:53:45.158Z","k":"synthesis_codex_ms","v":40257}
+{"t":"2026-08-30T12:53:45.254Z","k":"ideas_proposed","v":3}
+{"t":"2026-08-30T12:53:45.546Z","k":"prototype_failed","v":"Phase Disclosure Composer"}
+{"t":"2026-08-30T12:53:45.548Z","k":"prototype_failed","v":"Evidence-Weighted Reading Surface"}
+{"t":"2026-08-30T12:53:46.061Z","k":"prototype_sandbox_create_ms","v":764}
+{"t":"2026-08-30T12:53:46.684Z","k":"codex_auth","v":"chatgpt"}
+{"t":"2026-08-30T12:54:28.846Z","k":"codex_exec_ms","v":42129}
+{"t":"2026-08-30T12:54:31.276Z","k":"paste_to_prototype_ms","v":46022}
+{"t":"2026-08-30T12:54:31.277Z","k":"synthesize_total_ms","v":86966}
+{"t":"2026-08-30T12:54:31.277Z","k":"prototypes_live","v":1}
+{"t":"2026-08-30T12:55:34.488Z","k":"vault_sandbox_create_ms","v":771}
+{"t":"2026-08-30T12:55:35.441Z","k":"codex_auth","v":"chatgpt"}
+{"t":"2026-08-30T12:56:05.030Z","k":"codex_exec_ms","v":29316}
+{"t":"2026-08-30T12:56:05.314Z","k":"vault_sync_down_ms","v":169}
+{"t":"2026-08-30T12:56:05.314Z","k":"capture_total_ms","v":31597}
+{"t":"2026-08-30T12:56:14.956Z","k":"codex_auth","v":"chatgpt"}
+{"t":"2026-08-30T12:57:01.168Z","k":"codex_exec_ms","v":46149}
+{"t":"2026-08-30T12:57:01.170Z","k":"synthesis_codex_ms","v":46151}
+{"t":"2026-08-30T12:57:01.239Z","k":"ideas_proposed","v":3}
+{"t":"2026-08-30T12:57:01.452Z","k":"prototype_failed","v":"Alert Capture Relay"}
+{"t":"2026-08-30T12:57:01.456Z","k":"prototype_failed","v":"Pave the Diff"}
+{"t":"2026-08-30T12:57:01.466Z","k":"prototype_failed","v":"One-Knob Calibration"}
+{"t":"2026-08-30T12:57:01.466Z","k":"synthesize_total_ms","v":47289}
+{"t":"2026-08-30T12:57:01.467Z","k":"prototypes_live","v":0}
+{"t":"2026-08-30T12:59:40.492Z","k":"vault_sandbox_create_ms","v":1002}
+{"t":"2026-08-30T12:59:41.538Z","k":"codex_auth","v":"chatgpt"}
+{"t":"2026-08-30T13:00:26.221Z","k":"codex_exec_ms","v":44157}
+{"t":"2026-08-30T13:00:26.223Z","k":"synthesis_codex_ms","v":44159}
+{"t":"2026-08-30T13:00:26.314Z","k":"ideas_proposed","v":3}
+{"t":"2026-08-30T13:00:27.012Z","k":"prototype_sandbox_create_ms","v":659}
+{"t":"2026-08-30T13:00:27.325Z","k":"prototype_sandbox_create_ms","v":919}
+{"t":"2026-08-30T13:00:27.437Z","k":"prototype_sandbox_create_ms","v":1027}
+{"t":"2026-08-30T13:00:28.062Z","k":"codex_auth","v":"chatgpt"}
+{"t":"2026-08-30T13:00:28.364Z","k":"codex_auth","v":"chatgpt"}
+{"t":"2026-08-30T13:00:28.369Z","k":"codex_auth","v":"chatgpt"}
+{"t":"2026-08-30T13:01:14.108Z","k":"codex_exec_ms","v":45703}
+{"t":"2026-08-30T13:01:16.597Z","k":"paste_to_prototype_ms","v":50282}
+{"t":"2026-08-30T13:01:21.514Z","k":"codex_exec_ms","v":53316}
+{"t":"2026-08-30T13:01:23.937Z","k":"paste_to_prototype_ms","v":57622}
+{"t":"2026-08-30T13:01:32.398Z","k":"codex_exec_ms","v":63991}
+{"t":"2026-08-30T13:01:34.785Z","k":"paste_to_prototype_ms","v":68470}
+{"t":"2026-08-30T13:01:34.786Z","k":"synthesize_total_ms","v":115296}
+{"t":"2026-08-30T13:01:34.786Z","k":"prototypes_live","v":3}
