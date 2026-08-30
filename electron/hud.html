@@ -17,6 +17,7 @@
   body {
     font: 14px/1.5 -apple-system, ui-sans-serif, system-ui, sans-serif;
     color: var(--fg); -webkit-font-smoothing: antialiased;
+    -webkit-user-select: none; user-select: none;
     display: flex; flex-direction: column;
     border-radius: 14px; border: 1px solid var(--line);
     background: rgba(18,19,26,0.58);
@@ -26,8 +27,15 @@
 
   header {
     -webkit-app-region: drag; overflow: hidden;
-    display: flex; align-items: center; gap: 8px; padding: 10px 10px 10px 13px; flex: none;
+    display: flex; align-items: center; gap: 8px;
+    padding: 9px 9px 7px 12px; flex: none;
   }
+  .srcrow {
+    -webkit-app-region: drag; overflow: hidden;
+    display: flex; align-items: center; gap: 8px;
+    padding: 0 13px 8px; flex: none;
+  }
+  .srcrow.hide { display: none !important; }
   .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--violet); flex: none;
          box-shadow: 0 0 0 3px rgba(167,139,250,0.18); }
   .src { font-size: 12px; color: var(--fg); white-space: nowrap; overflow: hidden;
@@ -38,10 +46,10 @@
          text-overflow: ellipsis; direction: rtl; text-align: right; }
   .x { -webkit-app-region: no-drag; flex: none; width: 22px; height: 22px; border-radius: 6px;
        border: 1px solid var(--line); background: rgba(255,255,255,0.05); color: var(--dim);
-       font: 13px/1 -apple-system, system-ui; cursor: pointer; padding: 0; }
+       font: 13px/1 -apple-system, system-ui; cursor: pointer; padding: 0; margin-left: auto; }
   .x:hover { background: rgba(247,118,142,0.16); color: #ffb3c0; border-color: rgba(247,118,142,.4); }
 
-  .tabs { -webkit-app-region: no-drag; display: flex; gap: 2px; margin-left: 4px;
+  .tabs { -webkit-app-region: no-drag; display: flex; gap: 2px;
           background: rgba(255,255,255,.05); border: 1px solid var(--line);
           border-radius: 7px; padding: 2px; flex: none; }
   .tab { border: 0; background: transparent; color: var(--dim); cursor: pointer;
@@ -67,7 +75,7 @@
   @keyframes breathe { 50% { opacity: .5; } }
 
   .row { -webkit-app-region: no-drag; display: flex; align-items: center; gap: 7px; padding: 10px 13px 12px; }
-  input {
+  input { -webkit-user-select: text; user-select: text;
     flex: 1 1 auto; min-width: 0;
     background: rgba(255,255,255,.06); color: var(--fg);
     border: 1px solid var(--line); border-radius: 9px; padding: 9px 11px;
@@ -140,15 +148,17 @@
 </head>
 <body>
   <header>
-    <span class="dot"></span>
-    <span class="src" id="src">inbox</span>
     <span class="tabs">
       <button class="tab on" id="tabCap">Capture</button>
       <button class="tab" id="tabDash">Synthesize</button>
     </span>
-    <span class="url" id="url"></span>
     <button class="x" id="close" title="Close (esc)">✕</button>
   </header>
+  <div class="srcrow" id="srcrow">
+    <span class="dot"></span>
+    <span class="src" id="src">inbox</span>
+    <span class="url" id="url"></span>
+  </div>
 
   <div class="capture" id="cap">
     <span class="mark empty" id="mark">Highlight anything — it appears here live. ⏎ or Save to keep it.</span>
@@ -329,7 +339,7 @@ function setTab(next) {
   $('foot').classList.toggle('hide', dash);
   $('sess').classList.toggle('hide', dash);
   $('dash').classList.toggle('on', dash);
-  $('url').classList.toggle('hide', dash);
+  $('srcrow').classList.toggle('hide', dash);
   if (dash) {
     // load lazily so the capture tab never waits on the server
     if ($('dashFrame').src === 'about:blank') $('dashFrame').src = 'http://localhost:3737/?embed=1';
