@@ -14,9 +14,8 @@ Jensen Huang characterizes NVIDIA's Ampere-based A100, introduced in 2020, as ha
 
 ## Notes
 
-- *No captured highlight — this note predates highlight capture.*
-  - *A single accelerator generation can serve several workloads over time, rather than being tied to its original training use case.*
-  - *This is a vendor statement, so it is evidence of NVIDIA's positioning as much as an independently verified market measure.*
+- *A single accelerator generation can serve several workloads over time, rather than being tied to its original training use case.*
+- *This is a vendor statement, so it is evidence of NVIDIA's positioning as much as an independently verified market measure.*
 
 ## Links
 
