@@ -1,0 +1,10 @@
+{
+  "title": "Reading Threshold Calibrator",
+  "oneLiner": "A self-contained reading test that changes one display variable at a time to find each reader's lowest comfortable contrast and then previews a personalized reading surface.",
+  "whyYou": "The vault's espresso note supplies a practical threshold-search method for coupled variables, while its legibility notes make that method unexpectedly useful for accessible typography.",
+  "sourceNotes": [
+    "sources/espresso-extraction-variables.md",
+    "sources/legibility-at-low-contrast.md",
+    "topics/interfaces-that-know-the-time.md"
+  ]
+}

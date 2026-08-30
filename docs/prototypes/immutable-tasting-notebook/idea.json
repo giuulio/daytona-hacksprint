@@ -1,0 +1,10 @@
+{
+  "title": "Immutable Tasting Notebook",
+  "oneLiner": "A browser-only experiment log for espresso that locks each raw brew observation while allowing separate, revisable hypotheses and next-shot settings.",
+  "whyYou": "The combination of destructive tasting measurements and archival provenance points to a tiny lab notebook where interpretation can change without falsifying the record.",
+  "sourceNotes": [
+    "sources/espresso-extraction-variables.md",
+    "topics/provenance.md",
+    "ideas/raw/log-analyser-for-slow-processes.md"
+  ]
+}

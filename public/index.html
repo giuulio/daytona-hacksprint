@@ -44,7 +44,14 @@
   .cites { display: flex; flex-wrap: wrap; gap: 6px; }
   .cite { font: 11px ui-monospace, Menlo, monospace; background: #1d2029; border: 1px solid var(--line); color: var(--accent); padding: 3px 7px; border-radius: 5px; }
   iframe { width: 100%; height: 320px; border: 0; border-top: 1px solid var(--line); background: #000; }
-  .status { font-size: 13px; color: var(--dim); margin-top: 12px; min-height: 20px; }
+  .status { font-size: 13px; color: var(--dim); margin: 12px 0 20px; min-height: 20px;
+            font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; }
+  .status div { opacity: 0.55; }
+  .status div:last-child { opacity: 1; color: var(--fg); }
+  .phase { margin-top: 12px; font: 12px ui-monospace, Menlo, monospace; color: var(--dim); }
+  .ok { color: var(--ok); } .bad { color: var(--bad); }
+  .pulse { color: var(--accent); animation: p 1s steps(1) infinite; }
+  @keyframes p { 50% { opacity: 0.25; } }
   .fail { color: var(--bad); padding: 18px; font-size: 13px; }
   .badge { font-size: 11px; padding: 2px 7px; border-radius: 4px; background: #1d2029; color: var(--dim); margin-left: 8px; }
   .badge.live { color: var(--ok); }
@@ -116,21 +123,87 @@ function render(list) {
 }
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-$('synth').onclick = async () => {
+// Streamed synthesis. Ideas + citations arrive ~45s before the prototypes, so
+// cards render early and each fills in as its sandbox boots and Codex writes.
+$('synth').onclick = () => {
   $('synth').disabled = true;
-  $('synthStatus').textContent = 'reading the vault, finding overlaps, spinning up sandboxes…';
+  $('grid').innerHTML = '';
+  const log = [];
   const t0 = Date.now();
-  try {
-    const r = await fetch('/synthesize', { method: 'POST' }).then((r) => r.json());
-    if (r.ok) {
-      $('synthStatus').textContent = `${r.prototypes.filter((p) => p.ok).length}/${r.prototypes.length} prototypes live · ${((Date.now() - t0) / 1000).toFixed(1)}s · ${r.sandboxesCreated} sandboxes created`;
-      render(r.prototypes);
-    } else {
-      $('synthStatus').textContent = 'failed: ' + r.error + ' — showing cached';
-      render(r.cached || []);
+  const el = (s) => document.querySelector(`[data-slug="${s}"] .phase`);
+  const say = (m) => {
+    log.push(`${((Date.now() - t0) / 1000).toFixed(1)}s  ${m}`);
+    $('synthStatus').innerHTML = log.slice(-4).map((l) => `<div>${esc(l)}</div>`).join('');
+  };
+
+  const es = new EventSource('/synthesize/stream');
+  es.onmessage = (ev) => {
+    const d = JSON.parse(ev.data);
+    switch (d.type) {
+      case 'status':   say(d.msg); break;
+      case 'indexed':  say(`indexed ${d.notes} notes`); break;
+      case 'overlaps_ms': say(`overlaps found in ${(d.ms / 1000).toFixed(1)}s`); break;
+
+      case 'ideas':
+        say(`${d.ideas.length} ideas proposed, fanning out`);
+        $('grid').innerHTML = d.ideas.map((p) => `
+          <div class="card" data-slug="${p.slug}">
+            <header>
+              <h3>${esc(p.title)}</h3>
+              <p>${esc(p.oneLiner || '')}</p>
+              <p style="color:#6c7086">${esc(p.whyYou || '')}</p>
+              <div class="cites">${(p.sourceNotes || []).map((f) => `<span class="cite">${esc(f)}</span>`).join('')}</div>
+              <div class="phase">queued…</div>
+            </header>
+          </div>`).join('');
+        break;
+
+      case 'sandbox_up':
+        if (el(d.slug)) el(d.slug).innerHTML = `<span class="ok">●</span> sandbox ${esc(d.sandboxId)} up in ${d.ms}ms`;
+        say(`sandbox ${d.sandboxId} up in ${d.ms}ms`);
+        break;
+
+      case 'building':
+        if (el(d.slug)) el(d.slug).innerHTML = `<span class="pulse">◐</span> codex writing index.html…`;
+        break;
+
+      case 'live': {
+        const card = document.querySelector(`[data-slug="${d.slug}"]`);
+        if (card) {
+          el(d.slug).innerHTML = `<span class="ok">✓</span> live · ${d.lines} lines · ${(d.ms / 1000).toFixed(1)}s`;
+          const f = document.createElement('iframe');
+          f.src = d.url; f.loading = 'lazy';
+          card.appendChild(f);
+        }
+        say(`${d.slug} live in ${(d.ms / 1000).toFixed(1)}s`);
+        break;
+      }
+
+      case 'failed': {
+        const card = document.querySelector(`[data-slug="${d.slug}"]`);
+        if (card) {
+          el(d.slug).innerHTML = `<span class="bad">✕</span> ${esc(d.error)}`;
+          const f = document.createElement('iframe');   // INVARIANT 6: fall back to cache
+          f.src = `/p/${d.slug}`; f.loading = 'lazy';
+          card.appendChild(f);
+        }
+        say(`${d.slug} failed — falling back to cache`);
+        break;
+      }
+
+      case 'done':
+        say(`${d.live}/${d.total} live · ${(d.ms / 1000).toFixed(1)}s · ${d.sandboxesCreated} sandboxes created`);
+        es.close(); $('synth').disabled = false;
+        break;
+
+      case 'error':
+        say('failed: ' + d.error + ' — showing cached');
+        render((d.cached || []).map((x) => ({ ...x, ok: false })));
+        es.close(); $('synth').disabled = false;
+        break;
     }
-  } catch (e) { $('synthStatus').textContent = 'failed: ' + e.message; }
-  $('synth').disabled = false;
+  };
+  es.onerror = () => { say('stream lost'); es.close(); $('synth').disabled = false; };
 };
 
 async function loadCached() {

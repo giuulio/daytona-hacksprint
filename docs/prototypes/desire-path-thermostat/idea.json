@@ -1,0 +1,10 @@
+{
+  "title": "Desire-Path Thermostat",
+  "oneLiner": "An interactive page that shows a process schedule beside live deviation signals and recommends whether to follow the recipe, adjust the environment, or update the default path.",
+  "whyYou": "Fermentation treats deviation as a temperature-driven state change, while desire paths treat deviation as user intent—together they make a compelling controller for deciding which deviations deserve adaptation.",
+  "sourceNotes": [
+    "topics/desire-paths.md",
+    "sources/sourdough-timing-notes.md",
+    "sources/telemetry-driven-design-talk.md"
+  ]
+}

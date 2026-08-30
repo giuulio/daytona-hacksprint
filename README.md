@@ -18,7 +18,7 @@ the **Codex CLI**, running inside **Daytona** sandboxes.
 
 | Layer | What happens |
 | --- | --- |
-| **1 · Capture** | Highlight text anywhere on macOS, hit a hotkey, optionally add a note. It lands in the vault's `inbox/`. |
+| **1 · Capture** | Highlight text anywhere on macOS, press ⌘⇧K. A floating HUD shows what you grabbed, takes an optional note, and files it. It lands in the vault's `inbox/`. |
 | **2 · File** | Codex, in a sandbox holding the vault, reads the filing ruleset, greps for near-duplicates, decides route + filename + frontmatter + links, writes the note and commits. **No confirmation step.** |
 | **3 · Synthesize** | Codex reads the whole vault, finds cross-domain overlaps, proposes ideas that cite the exact notes they came from — then N sandboxes each build a live prototype, rendered as iframes. |
 
@@ -46,15 +46,25 @@ npm run dev                   # http://localhost:3737
 
 Point `vault/` at your own markdown notes, or use the seeded one included here.
 
-**Optional — the capture hotkey:**
+**The capture HUD:**
+
+![capture HUD](docs/hud.png)
 
 ```bash
-./scripts/install-shortcut.sh
+npm run hud     # registers ⌘⇧K globally, runs as a background agent
 ```
 
-Then bind it: System Settings → Keyboard → Keyboard Shortcuts → Services →
-General → "Capture to inbox". First run asks for Accessibility permission
-(it sends ⌘C to grab your selection).
+Highlight text in any app, press ⌘⇧K. The HUD shows the selection, the source
+app and URL, and takes an optional note. ⏎ files it, esc dismisses. Your
+clipboard is restored afterwards.
+
+macOS will ask for **Accessibility** permission the first time — the HUD sends
+⌘C to grab the selection, which is more reliable across apps (browsers, PDFs,
+native apps) than reading the accessibility selection directly.
+
+A no-Electron fallback exists as a macOS Quick Action:
+`./scripts/install-shortcut.sh`, then bind it under System Settings → Keyboard
+→ Keyboard Shortcuts → Services.
 
 ---
 
@@ -67,6 +77,8 @@ Two distinct roles, both load-bearing at demo time:
   captured link should become a new note or join an existing hub note depends
   on the current state of the entire repo. That is a filesystem question, not
   an API question, so the agent needs a machine.
+  Progress is streamed to the browser over SSE, so the ideas and their citations
+  render ~40s before the prototypes finish rather than behind a two-minute spinner.
 - **Prototype sandboxes** — ephemeral, one per generated idea, created in
   parallel from a warm snapshot. Each runs Codex to write a single
   self-contained `index.html`, serves it on port 3000, and returns a preview URL
@@ -97,9 +109,9 @@ Instrumented from the first sandbox onward — see `metrics.jsonl`.
 | Prototype sandbox create, p50 | 0.8s |
 | Capture → filed, committed, synced to disk | 32s |
 | Vault sync back to disk | 0.2s |
-| Synthesis (vault → 3 cited ideas) | 44s |
-| **Paste → live prototype URL, p50** | **54s** |
-| Full 3-way fan-out, end to end | 115s |
+| Synthesis (vault → 3 cited ideas) | 40s |
+| **Capture → live prototype URL, p50** | **54s** |
+| Full 3-way fan-out, end to end | 117s (3/3 live) |
 | Sandboxes created while building this | 11 |
 
 ---
@@ -133,6 +145,8 @@ Enforced in server code, not just in prompts:
   an API key scoped to one project is the right call for anything real.
 - **Daytona tier caps concurrency.** Sandboxes are 2GiB so vault + 3 prototypes
   fit under a 10GiB account limit. Bigger fan-out needs a higher tier.
+- **The HUD needs Accessibility permission** and only reads the *current
+  selection* — there is no persistent screen reading of any kind.
 - **No tests, no CI, no auth, no multi-user.** Deliberately.
 
 ## Roadmap

@@ -1,0 +1,10 @@
+{
+  "title": "Outcome Reconciler",
+  "oneLiner": "A single-page log explorer that lets someone enter dated interventions and delayed outcomes, then choose and visualize a reconciliation rule instead of pretending the two timelines already agree.",
+  "whyYou": "This vault pairs a four-year climbing-log frustration with the distributed-systems idea that the important design decision is how divergent observed and declared states get merged.",
+  "sourceNotes": [
+    "ideas/raw/log-analyser-for-slow-processes.md",
+    "sources/eventual-consistency-primer.md",
+    "topics/slow-feedback-loops.md"
+  ]
+}

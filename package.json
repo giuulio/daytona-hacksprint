@@ -8,7 +8,8 @@
     "start": "tsx src/server.ts",
     "snapshot": "node scripts/build-snapshot.mjs",
     "sandboxes": "node scripts/sandboxes.mjs",
-    "reap": "node scripts/sandboxes.mjs --reap"
+    "reap": "node scripts/sandboxes.mjs --reap",
+    "hud": "ELECTRON_RUN_AS_NODE= electron electron/main.js"
   },
   "keywords": [],
   "author": "",
@@ -22,6 +23,7 @@
   },
   "devDependencies": {
     "@types/node": "^26.4.0",
+    "electron": "^44.0.0",
     "tsx": "^4.23.13",
     "typescript": "^7.0.2"
   }

@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { serve as honoServe } from '@hono/node-server';
+import { streamSSE } from 'hono/streaming';
 import { PORT, OPENAI_API_KEY } from './config.ts';
 import { getVaultSandbox, sandboxesCreated, syncVaultDown, reapStale } from './daytona.ts';
 import { writeToInbox, fileCapture, type CaptureInput } from './capture.ts';
@@ -53,6 +54,41 @@ app.post('/synthesize', async (c) => {
     return c.json({ ok: false, error: String(e?.message ?? e), cached: listCached() }, 500);
   }
 });
+
+/**
+ * Same as /synthesize, but streams progress. The ideas and their citations land
+ * ~45s before the prototypes finish, so the UI can render cards early instead of
+ * showing a spinner for the full ~115s.
+ */
+app.get('/synthesize/stream', (c) =>
+  streamSSE(c, async (stream) => {
+    const t0 = Date.now();
+    const send = (type: string, data: Record<string, unknown> = {}) =>
+      stream.writeSSE({ data: JSON.stringify({ type, ...data }) });
+
+    try {
+      send('status', { msg: 'waking the vault sandbox' });
+      const sb = await getVaultSandbox();
+      const reaped = await reapStale(sb.id);
+      if (reaped) send('status', { msg: `reclaimed ${reaped} orphaned sandbox(es)` });
+
+      const emit = (type: string, data?: Record<string, unknown>) => { void send(type, data ?? {}); };
+      const ideas = await proposeIdeas(sb, 3, emit);
+      metric('ideas_proposed', ideas.length);
+      await send('ideas', { ideas: ideas.map((i, n) => ({ ...i, slug: slugOf(i.title), n })) });
+
+      const settled = await Promise.allSettled(ideas.map((i) => buildPrototype(sb, i, emit)));
+      const live = settled.filter((s) => s.status === 'fulfilled' && (s.value as any).ok).length;
+      metric('synthesize_total_ms', Date.now() - t0);
+      metric('prototypes_live', live);
+      await send('done', { live, total: ideas.length, ms: Date.now() - t0, sandboxesCreated: sandboxesCreated() });
+    } catch (e: any) {
+      await send('error', { error: String(e?.message ?? e), cached: listCached() });
+    }
+  }),
+);
+
+const slugOf = (t: string) => t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 50);
 
 /** Warm path: cached prototypes served same-origin, so the demo works even if live gen dies. */
 app.get('/p/:slug', (c) => {

@@ -1,0 +1,10 @@
+{
+  "title": "State Drift Garden",
+  "oneLiner": "A single-page simulator where a planned routine and its observed outcomes drift apart over time, then lets you test explicit reconciliation rules instead of silently overwriting the plan.",
+  "whyYou": "This vault connects delayed learning with distributed-state reconciliation, suggesting that a training or fermentation plan should be treated as a replica that can legitimately diverge from reality.",
+  "sourceNotes": [
+    "topics/slow-feedback-loops.md",
+    "sources/eventual-consistency-primer.md",
+    "sources/climbing-training-periodisation.md"
+  ]
+}

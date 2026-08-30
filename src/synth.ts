@@ -4,6 +4,9 @@ import { VAULT_REMOTE } from './config.ts';
 import { createPrototypeSandbox, runCodex, serve } from './daytona.ts';
 import { metric } from './metrics.ts';
 
+export type Emit = (type: string, data?: Record<string, unknown>) => void;
+const noop: Emit = () => {};
+
 export type Idea = {
   title: string;
   oneLiner: string;
@@ -27,7 +30,7 @@ function extractJson(raw: string): any {
 export async function buildIndex(sb: Sandbox): Promise<string> {
   const r = await sb.process.executeCommand(
     `cd ${VAULT_REMOTE} && for f in $(git ls-files '*.md' | grep -v '^templates/'); do ` +
-      `echo "--- $f"; head -c 400 "$f" | tr '\\n' ' '; echo; done`,
+      `echo "@@FILE $f"; head -c 400 "$f" | tr '\\n' ' '; echo; done`,
     undefined,
     undefined,
     90,
@@ -36,12 +39,16 @@ export async function buildIndex(sb: Sandbox): Promise<string> {
 }
 
 /** Steps A+B: find cross-domain overlaps and propose ideas that cite real notes. */
-export async function proposeIdeas(sb: Sandbox, n = 3): Promise<Idea[]> {
+export async function proposeIdeas(sb: Sandbox, n = 3, emit: Emit = noop): Promise<Idea[]> {
+  emit('status', { msg: 'reading the vault' });
   const index = await buildIndex(sb);
+  const noteCount = (index.match(/^@@FILE /gm) ?? []).length;
+  emit('indexed', { notes: noteCount });
+  emit('status', { msg: 'looking for cross-domain overlaps' });
 
   const prompt = `You are in a personal markdown knowledge vault at ${VAULT_REMOTE}.
 
-Here is an index of every note (path, then opening text):
+Here is an index of every note. Each entry is a line '@@FILE <path>' followed by that note's opening text:
 
 ${index}
 
@@ -65,6 +72,7 @@ RULES:
   const t0 = Date.now();
   const res = await runCodex(sb, prompt, VAULT_REMOTE, 300);
   metric('synthesis_codex_ms', Date.now() - t0);
+  emit('overlaps_ms', { ms: Date.now() - t0 });
 
   let raw: string;
   try {
@@ -112,7 +120,7 @@ REQUIREMENTS — these are absolute:
 Write the file. Do not explain. Do not ask questions.`;
 
 /** Step C: one sandbox per idea, Codex builds it, return a live preview URL. */
-export async function buildPrototype(vaultSb: Sandbox, idea: Idea) {
+export async function buildPrototype(vaultSb: Sandbox, idea: Idea, emit: Emit = noop) {
   const slug = idea.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 50);
   const t0 = Date.now();
 
@@ -127,8 +135,11 @@ export async function buildPrototype(vaultSb: Sandbox, idea: Idea) {
 
   let sb: Sandbox | undefined;
   try {
+    const tSb = Date.now();
     sb = await createPrototypeSandbox(idea.title);
+    emit('sandbox_up', { slug, sandboxId: sb.id.slice(0, 8), ms: Date.now() - tSb });
     await sb.process.executeCommand('mkdir -p /root/site', undefined, undefined, 30);
+    emit('building', { slug });
     const codex = await runCodex(sb, PROTOTYPE_PROMPT(idea, noteText), '/root/site', 420);
 
     const check = await sb.process.executeCommand(
@@ -148,10 +159,13 @@ export async function buildPrototype(vaultSb: Sandbox, idea: Idea) {
 
     const url = await serve(sb, '/root/site');
     metric('paste_to_prototype_ms', Date.now() - t0);
-    return { ...idea, slug, url, cached: true, sandboxId: sb.id, lines: (check.result ?? '').trim(), ok: true };
+    const lines = (check.result ?? '').trim();
+    emit('live', { slug, url, lines, ms: Date.now() - t0 });
+    return { ...idea, slug, url, cached: true, sandboxId: sb.id, lines, ok: true };
   } catch (e: any) {
     // INVARIANT 6: one failure must not take down the others.
     metric('prototype_failed', idea.title);
+    emit('failed', { slug, error: String(e?.message ?? e).slice(0, 200) });
     return { ...idea, slug, url: null, cached: existsSync(`${CACHE_DIR}/${slug}/index.html`), ok: false, error: String(e?.message ?? e) };
   }
 }

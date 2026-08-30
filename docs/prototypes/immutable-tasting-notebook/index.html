@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Immutable Tasting Notebook</title>
+<style>
+  :root{color-scheme:dark;--bg:#111311;--panel:#1a1e1a;--line:#303830;--text:#f1f2ea;--muted:#9fa79c;--lime:#c7f36b;--orange:#f1ab5b}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace}.wrap{max-width:1050px;margin:auto;padding:56px 28px 80px}header{display:flex;justify-content:space-between;gap:20px;align-items:end;border-bottom:1px solid var(--line);padding-bottom:29px;margin-bottom:30px}h1{font:500 clamp(28px,5vw,50px)/1.08 Georgia,serif;margin:0;letter-spacing:-1.5px}header p{margin:9px 0 0;color:var(--muted);font-size:12px}.count{color:var(--lime);font-size:12px;white-space:nowrap}.grid{display:grid;grid-template-columns:1fr 1.18fr;gap:24px}.panel{background:var(--panel);border:1px solid var(--line);padding:25px}h2{font-size:11px;text-transform:uppercase;letter-spacing:1.3px;color:var(--lime);margin:0 0 20px}label{display:block;font-size:11px;color:var(--muted);letter-spacing:.5px;margin:0 0 15px}input,textarea,select{display:block;width:100%;margin-top:6px;background:#121512;color:var(--text);border:1px solid #3b4439;padding:10px;font:14px ui-monospace,SFMono-Regular,Menlo,monospace;border-radius:2px}textarea{resize:vertical;min-height:76px}button{font:12px ui-monospace,SFMono-Regular,Menlo,monospace;padding:11px 14px;border:1px solid var(--lime);background:var(--lime);color:#192010;cursor:pointer;border-radius:2px}button:hover{background:#d9ff8a}button.ghost{background:transparent;color:var(--muted);border-color:#485045;margin-left:8px}.hint{font-size:12px;color:var(--muted);margin:15px 0 0}.log{display:grid;gap:12px}.entry{border:1px solid var(--line);padding:17px;background:#151815}.entry-top{display:flex;justify-content:space-between;gap:15px;margin-bottom:11px}.shot{color:var(--lime);font-size:12px}.time{color:var(--muted);font-size:11px}.raw{white-space:pre-wrap;margin:0 0 14px}.raw strong{color:var(--orange);font-size:11px;letter-spacing:1px}.editable{border-top:1px solid var(--line);padding-top:13px}.editable label{margin-bottom:8px}.editable textarea{min-height:55px;color:#dbe4d7}.empty{color:var(--muted);padding:32px 0;text-align:center;border:1px dashed var(--line)}.notice{font-size:11px;color:var(--orange);margin-top:10px;min-height:17px}@media(max-width:740px){.wrap{padding:34px 18px}.grid{grid-template-columns:1fr}header{display:block}.count{display:block;margin-top:16px}}
+</style>
+<main class="wrap">
+  <header><div><h1>Immutable Tasting Notebook</h1><p>From “What actually moves the needle in espresso extraction” + “Provenance”.</p></div><span class="count" id="count">0 locked observations</span></header>
+  <div class="grid">
+    <section class="panel"><h2>Record a shot</h2>
+      <label>Grind setting<input id="grind" placeholder="e.g. 3.2"></label>
+      <label>Dose / yield<input id="ratio" placeholder="e.g. 18 g in / 36 g out"></label>
+      <label>Time<input id="time" placeholder="e.g. 28 s"></label>
+      <label>Raw tasting observation<textarea id="taste" placeholder="What happened? Keep it concrete: sharp lemon, thin body, dry finish…"></textarea></label>
+      <button id="lock">Lock observation</button><button class="ghost" id="seed">Load example</button>
+      <p class="hint">Once locked, raw observations cannot be changed. Your interpretation remains editable beside them.</p><div class="notice" id="notice"></div>
+    </section>
+    <section class="panel"><h2>Archive — raw first, interpretation second</h2><div class="log" id="log"></div></section>
+  </div>
+</main>
+<script>
+  const $=id=>document.getElementById(id), fields=['grind','ratio','time','taste'];
+  let shots=JSON.parse(localStorage.espressoNotebook||'[]');
+  function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+  function save(){localStorage.espressoNotebook=JSON.stringify(shots)}
+  function render(){
+    $('count').textContent=shots.length+' locked observation'+(shots.length===1?'':'s');
+    $('log').innerHTML=shots.length?shots.slice().reverse().map((s,i)=>`<article class="entry"><div class="entry-top"><span class="shot">SHOT #${shots.length-i} · LOCKED</span><span class="time">${s.at}</span></div><p class="raw"><strong>PARAMETERS</strong>  grind ${esc(s.grind||'—')} · ${esc(s.ratio||'—')} · ${esc(s.time||'—')}<br><br><strong>OBSERVED</strong>  ${esc(s.taste)}</p><div class="editable"><label>Working hypothesis<textarea data-i="${shots.length-1-i}" data-k="hypothesis" placeholder="Why might this have happened?">${esc(s.hypothesis||'')}</textarea></label><label>Next-shot setting<textarea data-i="${shots.length-1-i}" data-k="next" placeholder="One intentional adjustment for the next shot.">${esc(s.next||'')}</textarea></label></div></article>`).join(''):'<div class="empty">No observations yet.<br>Pull a shot, then preserve what you noticed.</div>';
+  }
+  $('lock').onclick=()=>{let s=Object.fromEntries(fields.map(k=>[k,$(k).value.trim()]));if(!s.taste){$('notice').textContent='A raw tasting observation is required.';return}shots.push({...s,at:new Date().toLocaleString(),hypothesis:'',next:''});save();fields.forEach(k=>$(k).value='');$('notice').textContent='Observation locked. Interpret it freely.';render()};
+  $('seed').onclick=()=>{Object.assign($('grind'),{value:'3.4'});$('ratio').value='18 g in / 38 g out';$('time').value='25 s';$('taste').value='Bright lemon at first; thin through the middle; a little salty on the finish.'};
+  $('log').oninput=e=>{let t=e.target;if(!t.dataset.k)return;shots[t.dataset.i][t.dataset.k]=t.value;save()};render();
+</script>
+</html>

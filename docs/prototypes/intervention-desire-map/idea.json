@@ -1,0 +1,10 @@
+{
+  "title": "Intervention Desire Map",
+  "oneLiner": "A small process simulator where users record when they override a slow process, then see recurring interventions as paths the default workflow should absorb rather than errors to suppress.",
+  "whyYou": "The vault connects fermentation's sparse, delayed control with telemetry's insistence that deviations reveal the real workflow, yielding a tool for treating improvised interventions as design evidence.",
+  "sourceNotes": [
+    "topics/fermentation-as-a-control-problem.md",
+    "sources/telemetry-driven-design-talk.md",
+    "topics/desire-paths.md"
+  ]
+}

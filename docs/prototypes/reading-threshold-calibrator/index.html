@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reading Threshold Calibrator</title>
+<style>
+  :root{--bg:#111214;--panel:#191b1f;--ink:#f3f1eb;--muted:#a6a8ad;--line:#30333a;--accent:#d6f07a}
+  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  main{width:min(840px,calc(100% - 40px));margin:0 auto;padding:76px 0 64px} header{margin-bottom:64px}.eyebrow{color:var(--accent);font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+  h1{font-size:clamp(38px,7vw,68px);letter-spacing:-.055em;line-height:.98;margin:12px 0 18px} header p{color:var(--muted);max-width:570px;margin:0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:clamp(24px,5vw,48px);min-height:390px}.meter{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:13px;margin-bottom:42px}.track{height:3px;background:#30333a;flex:1;border-radius:99px;overflow:hidden}.fill{height:100%;width:0;background:var(--accent);transition:width .25s}
+  .prompt{color:var(--muted);font-size:14px;margin:0 0 18px}.sample{font-family:Georgia,"Times New Roman",serif;font-size:clamp(23px,3.5vw,31px);line-height:1.48;letter-spacing:.005em;max-width:650px;min-height:142px;transition:color .25s}.hint{color:var(--muted);font-size:14px;margin:31px 0 17px}
+  .actions{display:flex;gap:12px;flex-wrap:wrap}button{appearance:none;border:1px solid #51555e;border-radius:9px;background:transparent;color:var(--ink);font:600 15px inherit;padding:12px 18px;cursor:pointer;transition:.15s}button:hover{border-color:var(--accent);color:var(--accent)}button.primary{background:var(--accent);border-color:var(--accent);color:#182000}button.primary:hover{background:#e2fa87;color:#182000}
+  .result{display:none}.result h2{font-size:28px;letter-spacing:-.03em;margin:0 0 8px}.result>p{color:var(--muted);margin:0 0 27px}.surface{border-radius:12px;padding:30px;transition:.3s}.surface small{font:700 11px ui-sans-serif,system-ui;letter-spacing:.12em;text-transform:uppercase;opacity:.62}.surface p{font:23px/1.55 Georgia,serif;margin:18px 0 0}.reading{margin-top:27px;color:var(--muted);font-size:13px}
+  footer{margin-top:20px;color:#777b83;font-size:12px}kbd{font:12px ui-monospace,monospace;border:1px solid #484b51;border-radius:4px;padding:1px 5px}
+</style>
+</head>
+<body><main>
+  <header><div class="eyebrow">A tiny calibration</div><h1>Reading Threshold<br>Calibrator</h1><p>Find the faintest text that still feels effortless — then carry that threshold into a quieter reading surface.</p></header>
+  <section class="card" aria-live="polite">
+    <div class="meter"><span id="step">Pass 1 of 6</span><div class="track"><div class="fill" id="fill"></div></div><span id="level">100%</span></div>
+    <div id="test">
+      <p class="prompt">Read this once, at your natural pace. Does it still feel comfortable?</p>
+      <div class="sample" id="sample">The small, unhurried details are often where a page begins to feel like it was made for a particular reader.</div>
+      <p class="hint">Choose by effort, not whether you can technically decipher it.</p>
+      <div class="actions"><button class="primary" id="yes">Comfortable <kbd>Y</kbd></button><button id="no">Too faint <kbd>N</kbd></button></div>
+    </div>
+    <div class="result" id="result"><h2>Your comfortable floor: <span id="score"></span></h2><p>This preview stays just above it, with a softer paper tone and a little more breathing room.</p><div class="surface" id="surface"><small>Personal reading surface</small><p>At this setting, the text can recede from your attention and leave the meaning in front. Save the feeling, not just the number.</p></div><div class="actions" style="margin-top:25px"><button class="primary" id="again">Calibrate again</button></div><div class="reading">Your result stays in this browser only.</div></div>
+  </section>
+  <footer>Made from “What actually moves the needle in espresso extraction” and “Legibility when contrast is not on your side.”</footer>
+</main>
+<script>
+  const levels=[100,82,66,51,39,29], sample=document.querySelector('#sample'),step=document.querySelector('#step'),level=document.querySelector('#level'),fill=document.querySelector('#fill');
+  let i=0,lastGood=100;
+  function draw(){let n=levels[i];sample.style.color=`hsl(42 20% ${n}%)`;step.textContent=`Pass ${i+1} of ${levels.length}`;level.textContent=n+'%';fill.style.width=(i/levels.length*100)+'%'}
+  function next(ok){if(ok)lastGood=levels[i];i++;if(i===levels.length)return finish();draw()}
+  function finish(){document.querySelector('#test').style.display='none';document.querySelector('#result').style.display='block';fill.style.width='100%';step.textContent='Calibrated';level.textContent='';document.querySelector('#score').textContent=lastGood+'%';let light=Math.max(lastGood+13,47);let surface=document.querySelector('#surface');surface.style.background='#e9e4d9';surface.style.color=`hsl(30 12% ${light-15}%)`;localStorage.readingThreshold=lastGood}
+  document.querySelector('#yes').onclick=()=>next(true);document.querySelector('#no').onclick=()=>next(false);
+  document.querySelector('#again').onclick=()=>{i=0;lastGood=100;document.querySelector('#test').style.display='block';document.querySelector('#result').style.display='none';draw()};
+  addEventListener('keydown',e=>{if(document.querySelector('#result').style.display==='block')return;if(e.key.toLowerCase()==='y')next(true);if(e.key.toLowerCase()==='n')next(false)});draw();
+</script>
+</body></html>
