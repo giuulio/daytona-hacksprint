@@ -17,7 +17,9 @@ next phase of AI deployment as a large-scale financing and construction
 challenge as much as a model-development one. He places this in a longer
 historical pattern: industrial transformations require physical infrastructure,
 and their buildouts depend on external capital as well as technological
-progress.
+progress. The repeated highlight reinforces that historical analogy: capital
+is presented as a necessary companion to infrastructure buildout, not simply a
+financial afterthought.
 
 ## Notes
 
@@ -27,6 +29,9 @@ progress.
   committed or deployed.
 - > Every industrial revolution has been built on infrastructure: electricity, transportation, communications and computing, with every buildout enabled by external financing.
     - *This frames AI infrastructure finance as a recurring prerequisite for technological deployment, rather than an exceptional feature of the current boom.*
+- > Every industrial revolution has been built on infrastructure: electricity, transportation, communications and computing, with every buildout enabled by external financing.
+    - demo
+    - *The passage makes the financing claim do historical work: it argues that the capacity to build AI depends on institutions willing to fund long-lived physical systems.*
 
 ## Links
 

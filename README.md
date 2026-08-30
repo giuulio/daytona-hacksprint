@@ -161,6 +161,21 @@ Enforced in server code, not just in prompts:
 
 ---
 
+## Repo map
+
+```
+src/          API server — capture, save, file, synthesize (SSE), prototype cache
+  daytona.ts    sandbox lifecycle, Codex invocation, vault sync, quota reaping
+  capture.ts    inbox write + the filing prompt, with the ideas/raw guard
+  synth.ts      vault index, overlap prompt, citation validation, fan-out
+electron/     the capture HUD — global hotkey, live selection tracking, session log
+public/       the dashboard — streamed progress, prototype grid, full-screen view
+vault/        the knowledge vault, seeded. CLAUDE.md is the filing ruleset the agent reads
+scripts/      snapshot build, sandbox reaper, macOS Quick Action fallback
+docs/         screenshots and every prototype generated today
+metrics.jsonl every timing quoted above, as recorded
+```
+
 ## Honest limitations
 
 - **Filing is single-shot.** Codex gets one pass with no verification loop. It
