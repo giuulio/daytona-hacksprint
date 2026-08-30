@@ -16,12 +16,10 @@ concentrates one stimulus for 3–6 weeks, accepting temporary regression in the
 others.
 
 ## Notes
-- The core difficulty is that the feedback signal arrives weeks after the input.
-  You are always steering on stale information.
-- Overreaching and productive adaptation look identical for the first two weeks
-  and only diverge afterwards.
-- Everyone keeps a training log and almost nobody analyses it, because the
-  analysis requires aligning events that are weeks apart.
+- *No captured highlight — this note predates highlight capture.*
+  - *The core difficulty is that the feedback signal arrives weeks after the input. You are always steering on stale information.*
+  - *Overreaching and productive adaptation look identical for the first two weeks and only diverge afterwards.*
+  - *Everyone keeps a training log and almost nobody analyses it, because the analysis requires aligning events that are weeks apart.*
 
 ## Links
 - [[espresso-extraction-variables]]

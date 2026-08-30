@@ -15,11 +15,10 @@ stroke modulation matter far more at low contrast than at high, which is why typ
 that looks fine in a bright design review fails in real conditions.
 
 ## Notes
-- Optical sizing exists precisely because one outline cannot serve all conditions.
-- Most design systems ship a single type ramp and treat viewing conditions as
-  out of scope.
-- The reader's physiological state is a viewing condition too, and nobody
-  designs for it.
+- *No captured highlight — this note predates highlight capture.*
+  - *Optical sizing exists precisely because one outline cannot serve all conditions.*
+  - *Most design systems ship a single type ramp and treat viewing conditions as out of scope.*
+  - *The reader's physiological state is a viewing condition too, and nobody designs for it.*
 
 ## Links
 - [[circadian-light-and-alertness]]

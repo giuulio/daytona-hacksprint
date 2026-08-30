@@ -14,8 +14,9 @@ A chip-industry tooling pitch argues that eliminating waveform-dump runs could d
 
 ## Notes
 
-- The claimed 100-fold storage reduction depends on accurately deciding which diagnostic data can be discarded without impairing debugging.
-- This frames observability as a cost and feedback-speed trade-off rather than a default requirement to retain every trace.
+- *No captured highlight — this note predates highlight capture.*
+  - *The claimed 100-fold storage reduction depends on accurately deciding which diagnostic data can be discarded without impairing debugging.*
+  - *This frames observability as a cost and feedback-speed trade-off rather than a default requirement to retain every trace.*
 
 ## Links
 

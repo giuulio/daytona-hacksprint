@@ -17,10 +17,9 @@ rather than assuming each link will keep scaling smoothly.
 
 ## Notes
 
-- The limiting factor may move between hardware supply, model quality, useful
-  applications, adoption, willingness to pay, and capital availability.
-- More capability does not automatically translate into durable usage or
-  revenue; each handoff in the loop needs evidence.
+- *No captured highlight — this note predates highlight capture.*
+  - *The limiting factor may move between hardware supply, model quality, useful applications, adoption, willingness to pay, and capital availability.*
+  - *More capability does not automatically translate into durable usage or revenue; each handoff in the loop needs evidence.*
 
 ## Links
 

@@ -18,10 +18,9 @@ than assume.
 
 ## Notes
 
-- Evaluation results should shape deployment constraints before a model reaches
-  users.
-- Cybersecurity assessments need to test end-to-end exploit discovery, not just
-  abstract knowledge of vulnerabilities.
+- *No captured highlight — this note predates highlight capture.*
+  - *Evaluation results should shape deployment constraints before a model reaches users.*
+  - *Cybersecurity assessments need to test end-to-end exploit discovery, not just abstract knowledge of vulnerabilities.*
 
 ## Links
 

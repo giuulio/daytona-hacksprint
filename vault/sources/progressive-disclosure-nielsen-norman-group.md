@@ -17,9 +17,9 @@ expert needs as expendable.
 
 ## Notes
 
-- A useful default path can be simple even when the underlying system is not.
-- Reveal additional controls in response to a clear need, rather than making
-  every person parse every possibility up front.
+- *No captured highlight — this note predates highlight capture.*
+  - *A useful default path can be simple even when the underlying system is not.*
+  - *Reveal additional controls in response to a clear need, rather than making every person parse every possibility up front.*
 
 ## Links
 

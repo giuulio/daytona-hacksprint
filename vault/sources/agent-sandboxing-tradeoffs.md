@@ -15,9 +15,9 @@ target by construction. The mitigation is not a better prompt, it is an executio
 boundary: a disposable machine with no credentials worth stealing.
 
 ## Notes
-- "Untrusted input producing executable output" is the actual threat model.
-- Disposability matters more than hardening — a sandbox you rebuild per task
-  has no persistence for an attacker to use.
+- *No captured highlight — this note predates highlight capture.*
+  - *"Untrusted input producing executable output" is the actual threat model.*
+  - *Disposability matters more than hardening — a sandbox you rebuild per task has no persistence for an attacker to use.*
 
 ## Links
 - [[context-engineering-for-agents]]

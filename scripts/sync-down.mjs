@@ -1,0 +1,10 @@
+import 'dotenv/config';
+import { Daytona } from '@daytonaio/sdk';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { execSync } from 'node:child_process';
+const d = new Daytona({ apiKey: process.env.DAYTONA_API_KEY });
+const sb = await d.get(readFileSync('.cache/vault-sandbox-id','utf8').trim());
+await sb.process.executeCommand('cd /root/vault && tar czf /tmp/out.tgz --exclude=.git .', undefined, undefined, 60);
+writeFileSync('/tmp/v.tgz', await sb.fs.downloadFile('/tmp/out.tgz'));
+execSync('cd vault && find . -mindepth 1 -maxdepth 1 -not -name .git -exec rm -rf {} + && tar xzf /tmp/v.tgz -C .');
+console.log('synced');
