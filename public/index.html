@@ -57,8 +57,11 @@
   .fail { color: var(--bad); padding: 18px; font-size: 13px; }
   .badge { font-size: 11px; padding: 2px 7px; border-radius: 4px; background: #1d2029; color: var(--dim); margin-left: 8px; }
   .badge.live { color: var(--ok); }
-  .embed body { padding: 18px 20px 28px; }
+  .embed, .embed body { height: 100%; }
+  .embed body { padding: 16px 18px 24px; }
   .embed h1, .embed .sub, .embed #capSection { display: none; }
+  .embed main { max-width: none; }
+  .embed h2 { margin-bottom: 10px; }
   .embed section { margin-bottom: 0; }
   .embed .grid { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
   .embed iframe { height: 260px; }

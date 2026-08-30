@@ -305,8 +305,8 @@ ipcMain.on('capture:shape', (_e, mode) => {
   if (!win) return;
   const { workArea } = screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
   const wide = mode === 'dash';
-  const width = wide ? Math.min(1080, workArea.width - 48) : 430;
-  const height = wide ? Math.min(760, workArea.height - 48) : 320;
+  const width = wide ? Math.min(920, workArea.width - 60) : 430;
+  const height = wide ? Math.min(700, workArea.height - 60) : 320;
   win.setBounds({
     x: Math.round(workArea.x + workArea.width - width - 24),
     y: Math.round(workArea.y + 24),
