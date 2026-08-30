@@ -25,6 +25,8 @@
     border: 1px solid var(--line); border-radius: 8px; padding: 14px; font: inherit; margin-bottom: 12px;
   }
   textarea { min-height: 120px; resize: vertical; }
+  #focus { font-size: 14px; }
+  #focus:focus { border-color: #7aa2f7; outline: none; }
   button {
     background: var(--accent); color: #0d0e12; border: 0; border-radius: 8px;
     padding: 12px 22px; font: 600 15px/1 inherit; cursor: pointer;
@@ -74,6 +76,7 @@
 
   <section>
     <h2>2 · Synthesize</h2>
+    <input id="focus" placeholder="Optional — steer it. e.g. &quot;from my latest two sources, build one prototype&quot;" />
     <button id="synth">Find overlaps &amp; build prototypes</button>
     <button id="loadCached" class="ghost">Load cached</button>
     <div class="status" id="synthStatus"></div>
@@ -136,7 +139,8 @@ $('synth').onclick = () => {
     $('synthStatus').innerHTML = log.slice(-4).map((l) => `<div>${esc(l)}</div>`).join('');
   };
 
-  const es = new EventSource('/synthesize/stream');
+  const focus = $('focus').value.trim();
+  const es = new EventSource('/synthesize/stream' + (focus ? `?focus=${encodeURIComponent(focus)}` : ''));
   es.onmessage = (ev) => {
     const d = JSON.parse(ev.data);
     switch (d.type) {

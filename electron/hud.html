@@ -118,6 +118,12 @@
   }
   .ifile:hover { border-color: var(--violet-line); color: #cbb8ff; }
   .empty-list { padding: 4px 16px 12px; font-size: 12px; color: var(--dim); }
+  .links { -webkit-app-region: no-drag; display: flex; gap: 7px;
+           padding: 0 13px 12px; border-top: 1px solid var(--line); margin-top: 2px; padding-top: 10px; }
+  .lnk { flex: 1; border: 1px solid var(--line); background: rgba(255,255,255,.05);
+         color: var(--dim); border-radius: 7px; padding: 8px 6px; cursor: pointer;
+         font: 600 11px/1 -apple-system, system-ui; }
+  .lnk:hover { border-color: var(--violet-line); color: #cbb8ff; background: rgba(167,139,250,.10); }
   .hide { display: none !important; }
 </style>
 </head>
@@ -144,6 +150,10 @@
     </div>
     <div class="empty-list" id="emptyList">Nothing saved yet. Saving is instant; filing runs the agent.</div>
     <div class="list hide" id="list"></div>
+    <div class="links">
+      <button class="lnk" id="openVault">Open vault ↗</button>
+      <button class="lnk" id="openDash">Dashboard ↗</button>
+    </div>
   </div>
 
 <script>
@@ -159,7 +169,7 @@ if (!IN_ELECTRON) {
     onSelection: (f) => { window.__fill = f; }, onSource: () => {}, onPending: () => {},
     save: async () => ({ ok: true, inbox: 'inbox/2026-08-30-demo.md' }),
     file: async () => ({ ok: true, changedFiles: ['sources/attention-is-all-you-need.md'] }),
-    dismiss(){}, resize(){}, openVault(){}, resume(){},
+    dismiss(){}, resize(){}, openVault(){}, openDashboard(){}, resume(){},
   };
 }
 
@@ -292,6 +302,8 @@ async function fileAll() {
 $('save').onclick = save;
 $('fileall').onclick = fileAll;
 $('close').onclick = () => window.inbox.dismiss();
+$('openVault').onclick = () => window.inbox.openVault();
+$('openDash').onclick = () => window.inbox.openDashboard();
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') return window.inbox.dismiss();
   if (e.key === 'Enter' && !$('save').disabled) { e.preventDefault(); save(); }

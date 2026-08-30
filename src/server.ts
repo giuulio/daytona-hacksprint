@@ -124,7 +124,9 @@ app.get('/synthesize/stream', (c) =>
       if (reaped) send('status', { msg: `reclaimed ${reaped} orphaned sandbox(es)` });
 
       const emit = (type: string, data?: Record<string, unknown>) => { void send(type, data ?? {}); };
-      const ideas = await proposeIdeas(sb, 3, emit);
+      const focus = c.req.query('focus') ?? '';
+      if (focus) send('status', { msg: `steering: "${focus.slice(0, 70)}"` });
+      const ideas = await proposeIdeas(sb, 3, emit, focus);
       metric('ideas_proposed', ideas.length);
       await send('ideas', { ideas: ideas.map((i, n) => ({ ...i, slug: slugOf(i.title), n })) });
 

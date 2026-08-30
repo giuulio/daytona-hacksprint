@@ -10,4 +10,5 @@ contextBridge.exposeInMainWorld('inbox', {
   resume: () => ipcRenderer.send('capture:resume'),
   resize: (h) => ipcRenderer.send('capture:resize', h),
   openVault: () => ipcRenderer.send('capture:open-vault'),
+  openDashboard: () => ipcRenderer.send('capture:open-dashboard'),
 });

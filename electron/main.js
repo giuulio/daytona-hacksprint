@@ -300,6 +300,7 @@ ipcMain.on('capture:resize', (_e, h) => {
   win.setBounds({ x: b.x, y: b.y, width: b.width, height: Math.max(150, Math.min(640, Math.round(h))) }, false);
 });
 ipcMain.on('capture:open-vault', () => shell.openPath(path.join(__dirname, '..', 'vault')));
+ipcMain.on('capture:open-dashboard', () => shell.openExternal(`http://localhost:${PORT}`));
 
 app.on('will-quit', () => globalShortcut.unregisterAll());
 app.on('window-all-closed', (e) => e.preventDefault()); // stay resident for the hotkey

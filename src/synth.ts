@@ -39,7 +39,7 @@ export async function buildIndex(sb: Sandbox): Promise<string> {
 }
 
 /** Steps A+B: find cross-domain overlaps and propose ideas that cite real notes. */
-export async function proposeIdeas(sb: Sandbox, n = 3, emit: Emit = noop): Promise<Idea[]> {
+export async function proposeIdeas(sb: Sandbox, n = 3, emit: Emit = noop, focus = ''): Promise<Idea[]> {
   emit('status', { msg: 'reading the vault' });
   const index = await buildIndex(sb);
   const noteCount = (index.match(/^@@FILE /gm) ?? []).length;
@@ -52,7 +52,16 @@ Here is an index of every note. Each entry is a line '@@FILE <path>' followed by
 
 ${index}
 
-TASK: identify exactly ${n} CROSS-DOMAIN overlaps between clusters of notes that are
+${focus ? `THE USER HAS ASKED FOR SOMETHING SPECIFIC. Their request takes priority over
+the general instruction below — follow it literally, including which notes to draw
+on and how many ideas to produce if they say:
+
+    "${focus}"
+
+Notes marked [recently added] are their most recent captures, newest first, so
+"my latest source", "the last two things I saved" and similar refer to those.
+
+` : ''}TASK: identify exactly ${n} CROSS-DOMAIN overlaps between clusters of notes that are
 NOT obviously related — the connection should be surprising. Ignore pairs from the
 same folder or the same subject. You may explore with 'rg "term" .' and 'cat' to
 confirm your reading (always pass the "." to rg — without a path it reads stdin and
