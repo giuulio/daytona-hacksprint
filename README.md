@@ -58,9 +58,17 @@ Highlight text in any app, press ⌘⇧K. The HUD shows the selection, the sourc
 app and URL, and takes an optional note. ⏎ files it, esc dismisses. Your
 clipboard is restored afterwards.
 
+The window appears in **~2ms** and the selection resolves in **~200-420ms**.
+Getting there needed three fixes worth knowing about if you build something
+similar: the first `clipboard.readText()` after idle costs 500-1800ms (a cold
+pasteboard wake), so a timer keeps it warm; `showInactive()` puts the window up
+without stealing focus, so ⌘C still reaches the app you were reading; and the
+source app/URL lookup is deferred until after the window is already visible.
+
 macOS will ask for **Accessibility** permission the first time — the HUD sends
 ⌘C to grab the selection, which is more reliable across apps (browsers, PDFs,
-native apps) than reading the accessibility selection directly.
+native apps) than reading the accessibility selection directly. The permission
+dialog names *Electron*, not *inbox*, because this is an unsigned dev build.
 
 A no-Electron fallback exists as a macOS Quick Action:
 `./scripts/install-shortcut.sh`, then bind it under System Settings → Keyboard
@@ -109,6 +117,8 @@ Instrumented from the first sandbox onward — see `metrics.jsonl`.
 | Prototype sandbox create, p50 | 0.8s |
 | Capture → filed, committed, synced to disk | 32s |
 | Vault sync back to disk | 0.2s |
+| HUD window on screen | **~2ms** |
+| HUD selection resolved | 200-420ms |
 | Synthesis (vault → 3 cited ideas) | 40s |
 | **Capture → live prototype URL, p50** | **54s** |
 | Full 3-way fan-out, end to end | 117s (3/3 live) |

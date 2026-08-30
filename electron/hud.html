@@ -5,73 +5,86 @@
 <title>inbox capture</title>
 <style>
   :root {
-    --fg: #f2f3f7; --dim: #9aa0b0; --faint: #6b7183;
-    --accent: #8fb0ff; --ok: #9ece6a; --bad: #f7768e;
-    --line: rgba(255,255,255,0.10);
+    --fg: #f4f4f8; --dim: #a2a6b6; --faint: #757b8e;
+    --violet: #a78bfa; --violet-soft: rgba(167,139,250,0.30);
+    --violet-line: rgba(167,139,250,0.55);
+    --ok: #9ece6a; --bad: #f7768e;
+    --line: rgba(255,255,255,0.11);
   }
   * { box-sizing: border-box; }
+  /* full-bleed: the window IS the HUD. Any gap here shows raw vibrancy. */
   html, body { margin: 0; background: transparent; overflow: hidden; }
   body {
     font: 14px/1.5 -apple-system, ui-sans-serif, system-ui, sans-serif;
-    color: var(--fg);
-    -webkit-font-smoothing: antialiased;
-    display: flex;
-  }
-
-  .hud {
-    flex: 1; margin: 10px; border-radius: 16px;
-    background: rgba(22,24,31,0.62);
+    color: var(--fg); -webkit-font-smoothing: antialiased;
+    display: flex; flex-direction: column;
+    border-radius: 14px;
     border: 1px solid var(--line);
-    box-shadow: 0 24px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
-    display: flex; flex-direction: column; overflow: hidden;
-    animation: rise 0.16s cubic-bezier(.2,.8,.3,1);
+    background: rgba(18,19,26,0.55);
+    animation: rise 0.13s cubic-bezier(.2,.8,.3,1);
   }
-  @keyframes rise { from { opacity: 0; transform: translateY(6px) scale(0.985); } }
+  @keyframes rise { from { opacity: 0; transform: translateY(5px) scale(0.99); } }
 
-  /* drag by the top strip, but keep inputs clickable */
-  .bar {
+  header {
     -webkit-app-region: drag;
     display: flex; align-items: center; gap: 9px;
-    padding: 13px 16px 11px; border-bottom: 1px solid var(--line);
+    padding: 12px 15px; flex: none;
   }
-  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex: none; }
-  .src { font: 500 12px/1 inherit; color: var(--dim); letter-spacing: 0.01em;
-         white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .src b { color: var(--fg); font-weight: 500; }
-  .esc { -webkit-app-region: no-drag; margin-left: auto; font: 11px ui-monospace, Menlo, monospace;
-         color: var(--dim); background: rgba(255,255,255,0.07); border: 1px solid var(--line);
-         border-radius: 5px; padding: 3px 7px; letter-spacing: .04em; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--violet); flex: none;
+         box-shadow: 0 0 0 3px rgba(167,139,250,0.18); }
+  .src { font-size: 12px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .src b { color: var(--fg); font-weight: 600; }
+  .url { font: 11px ui-monospace, Menlo, monospace; color: var(--faint);
+         margin-left: auto; max-width: 46%; white-space: nowrap; overflow: hidden;
+         text-overflow: ellipsis; direction: rtl; text-align: right; }
 
-  .quote {
-    padding: 14px 17px 2px;
-    font: 15px/1.5 ui-serif, Georgia, "Times New Roman", serif;
-    color: #eceef4;
-    max-height: 88px; overflow: hidden;
-    -webkit-mask-image: linear-gradient(#000 0, #000 80%, transparent 100%);
-            mask-image: linear-gradient(#000 0, #000 80%, transparent 100%);
+  .body { padding: 2px 16px 10px; overflow: hidden; display: flex; align-items: flex-start; }
+
+  /* the highlighter swash — clone so every wrapped line keeps it */
+  .mark {
+    font: 15px/1.75 ui-serif, Georgia, "Times New Roman", serif;
+    background: linear-gradient(transparent 10%, var(--violet-soft) 10%, var(--violet-soft) 90%, transparent 90%);
+    -webkit-box-decoration-break: clone; box-decoration-break: clone;
+    padding: 1px 4px; border-radius: 2px;
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
   }
-  .quote.empty { color: var(--faint); font-style: italic; font-family: inherit; font-size: 13px; }
-  .meta { padding: 2px 17px 0; font: 11px ui-monospace, Menlo, monospace; color: #7f8698;
-          white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mark.empty { font-family: inherit; font-size: 14px; color: #ded8f8; }
+  .mark.reading { font-family: inherit; font-size: 14px; color: #b9b3d6;
+                  background: linear-gradient(transparent 10%, rgba(167,139,250,0.16) 10%,
+                              rgba(167,139,250,0.16) 90%, transparent 90%);
+                  animation: breathe 1.1s ease-in-out infinite; }
+  @keyframes breathe { 50% { opacity: .5; } }
 
-  .row { display: flex; align-items: center; gap: 10px; padding: 12px 16px 14px; }
-  input {
+  footer {
     -webkit-app-region: no-drag;
-    flex: 1; background: rgba(255,255,255,0.05); color: var(--fg);
+    display: flex; align-items: center; gap: 9px;
+    padding: 11px 15px 13px; flex: none; border-top: 1px solid var(--line);
+  }
+  input {
+    flex: 1; background: rgba(255,255,255,0.06); color: var(--fg);
     border: 1px solid var(--line); border-radius: 9px;
     padding: 10px 12px; font: inherit; outline: none;
-    transition: border-color 0.14s, background 0.14s;
+    transition: border-color .14s, background .14s;
   }
   input::placeholder { color: var(--faint); }
-  input:focus { border-color: rgba(143,176,255,0.55); background: rgba(143,176,255,0.07); }
-  .kbd { font: 11px ui-monospace, Menlo, monospace; color: var(--dim); flex: none;
-         background: rgba(255,255,255,0.07); border: 1px solid var(--line);
-         border-radius: 5px; padding: 5px 8px; }
+  input:focus { border-color: var(--violet-line); background: rgba(167,139,250,0.09); }
+  input:disabled { opacity: .45; }
 
-  .state { display: none; padding: 14px 17px 16px; align-items: center; gap: 10px; font-size: 13px; }
+  button {
+    flex: none; border: 0; border-radius: 9px; cursor: pointer;
+    background: var(--violet); color: #16121f;
+    font: 600 13px/1 -apple-system, system-ui, sans-serif;
+    padding: 11px 15px; display: flex; align-items: center; gap: 7px;
+    transition: filter .14s, opacity .14s;
+  }
+  button:hover:not(:disabled) { filter: brightness(1.1); }
+  button:disabled { opacity: .38; cursor: default; }
+  button .ret { font: 11px ui-monospace, Menlo, monospace; opacity: .65; }
+
+  .state { display: none; align-items: center; gap: 10px; padding: 0 16px 4px; font-size: 13px; }
   .state.on { display: flex; }
   .spin { width: 13px; height: 13px; border: 2px solid rgba(255,255,255,0.18);
-          border-top-color: var(--accent); border-radius: 50%; animation: sp 0.7s linear infinite; flex: none; }
+          border-top-color: var(--violet); border-radius: 50%; animation: sp .7s linear infinite; flex: none; }
   @keyframes sp { to { transform: rotate(360deg); } }
   .route { font: 12px ui-monospace, Menlo, monospace; color: var(--ok); }
   .err { color: var(--bad); font-size: 12px; }
@@ -79,52 +92,130 @@
 </style>
 </head>
 <body>
-  <div class="hud">
-    <div class="bar">
-      <span class="dot"></span>
-      <span class="src" id="src">inbox</span>
-      <span class="esc">esc</span>
-    </div>
+  <header>
+    <span class="dot"></span>
+    <span class="src" id="src">inbox</span>
+    <span class="url" id="url"></span>
+  </header>
 
-    <div id="main">
-      <div class="quote empty" id="quote">Nothing selected — highlight some text and try again.</div>
-      <div class="meta" id="meta"></div>
-      <div class="row">
-        <input id="note" placeholder="Add a note for your future self… (optional)" autofocus />
-        <span class="kbd">⏎ file</span>
-      </div>
-    </div>
-
-    <div class="state" id="busy"><span class="spin"></span><span>filing into the vault…</span></div>
-    <div class="state" id="done"></div>
+  <div class="body" id="bodyRow">
+    <span class="mark empty" id="mark">Highlight text in any app, then press ⌘⇧K</span>
   </div>
+
+  <div class="state" id="busy"><span class="spin"></span><span>filing into the vault…</span></div>
+  <div class="state" id="done"></div>
+
+  <footer id="foot">
+    <input id="note" placeholder="Add a note for your future self… (optional)" />
+    <button id="file"><span>File it</span><span class="ret">⏎</span></button>
+  </footer>
 
 <script>
 const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
 let payload = { text: '', sourceApp: '', sourceUrl: '' };
 
-function show(el) { ['main','busy','done'].forEach((i) => $(i).classList.toggle('hide', i !== el)); $(el).classList.add(el === 'main' ? 'x' : 'on'); }
-
-// Browser preview: open hud.html?demo=1 to iterate on the design without Electron.
+// Browser preview only — never fires under Electron, where preload defines window.inbox.
 const IN_ELECTRON = !!window.inbox;
 if (!IN_ELECTRON) {
-  window.inbox = { onSelection: (f) => { window.__fill = f; }, submit: async () => ({ ok: true, changedFiles: ['sources/attention-is-all-you-need.md'] }), dismiss(){}, resize(){}, openVault(){} };
+  window.inbox = {
+    onSelection: (f) => { window.__fill = f; },
+    submit: async () => ({ ok: true, changedFiles: ['sources/attention-is-all-you-need.md'] }),
+    onSource: () => {}, onPending: () => {},
+    dismiss(){}, resize(){}, openVault(){},
+  };
 }
 
-window.inbox.onSelection((d) => {
-  payload = d;
-  $('src').innerHTML = d.sourceApp ? `from <b>${esc(d.sourceApp)}</b>` : 'inbox';
-  const q = $('quote');
-  if (d.text) { q.textContent = d.text.trim(); q.classList.remove('empty'); }
-  else { q.textContent = 'Nothing selected — highlight some text and try again.'; q.classList.add('empty'); }
-  $('meta').textContent = d.sourceUrl || '';
+function paintSource(d) {
+  payload.sourceApp = d.sourceApp || payload.sourceApp;
+  payload.sourceUrl = d.sourceUrl || payload.sourceUrl;
+  $('src').innerHTML = payload.sourceApp ? `from <b>${esc(payload.sourceApp)}</b>` : 'inbox';
+  $('url').textContent = payload.sourceUrl || '';
+}
+window.inbox.onSource(paintSource);
+
+// Window is already on screen while the selection is still being read.
+window.inbox.onPending(() => {
+  payload = { text: '', sourceApp: '', sourceUrl: '' };
+  $('src').textContent = 'inbox';
+  $('url').textContent = '';
+  const m = $('mark');
+  m.textContent = 'reading selection…';
+  m.className = 'mark reading';
   $('note').value = '';
-  $('busy').classList.remove('on'); $('done').classList.remove('on');
-  $('main').classList.remove('hide');
-  setTimeout(() => $('note').focus(), 30);
+  $('note').disabled = true;
+  $('file').disabled = true;
+  $('busy').classList.remove('on');
+  $('done').classList.remove('on');
+  $('foot').classList.remove('hide');
+  $('bodyRow').classList.remove('hide');
+  fit();
 });
 
-const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+window.inbox.onSelection((d) => {
+  payload = d || { text: '' };
+  const has = !!(payload.text && payload.text.trim());
+
+  $('src').innerHTML = payload.sourceApp ? `from <b>${esc(payload.sourceApp)}</b>` : 'inbox';
+  $('url').textContent = payload.sourceUrl || '';
+
+  const m = $('mark');
+  m.textContent = has ? payload.text.trim() : 'Highlight text in any app, then press ⌘⇧K';
+  m.className = has ? 'mark' : 'mark empty';
+
+  $('note').value = '';
+  $('note').disabled = !has;
+  $('file').disabled = !has;
+  $('busy').classList.remove('on');
+  $('done').classList.remove('on');
+  $('foot').classList.remove('hide');
+  $('bodyRow').classList.remove('hide');
+  if (has) setTimeout(() => $('note').focus(), 20);
+  fit();
+});
+
+// The window must match the content exactly — any excess shows raw vibrancy
+// as a pale slab under the HUD.
+function fit() {
+  requestAnimationFrame(() => {
+    const h = Math.ceil(document.body.getBoundingClientRect().height);
+    if (h > 40) window.inbox.resize(h);
+  });
+}
+
+async function fileIt() {
+  if (!payload.text?.trim()) return window.inbox.dismiss();
+  $('foot').classList.add('hide');
+  $('bodyRow').classList.add('hide');
+  $('busy').classList.add('on');
+  fit();
+  try {
+    const r = await window.inbox.submit({ ...payload, note: $('note').value });
+    $('busy').classList.remove('on');
+    $('done').classList.add('on');
+    if (r.ok) {
+      const files = (r.changedFiles || []).filter((f) => !f.startsWith('inbox/'));
+      $('done').innerHTML = `<span style="color:var(--ok)">✓</span><span>filed to</span>` +
+        `<span class="route">${esc(files[0] || 'the vault')}</span>`;
+      fit();
+      setTimeout(() => window.inbox.dismiss(), 2000);
+    } else {
+      $('done').innerHTML = `<span class="err">✕ ${esc(String(r.error).slice(0, 90))}</span>`;
+      setTimeout(() => window.inbox.dismiss(), 3000);
+    }
+  } catch {
+    $('busy').classList.remove('on');
+    $('done').classList.add('on');
+    $('done').innerHTML = `<span class="err">✕ server not running — npm run dev</span>`;
+    setTimeout(() => window.inbox.dismiss(), 3000);
+  }
+}
+
+$('file').addEventListener('click', fileIt);
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') return window.inbox.dismiss();
+  if (e.key === 'Enter') { e.preventDefault(); fileIt(); }
+});
 
 if (!IN_ELECTRON && new URLSearchParams(location.search).get('demo')) {
   window.__fill({
@@ -133,35 +224,9 @@ if (!IN_ELECTRON && new URLSearchParams(location.search).get('demo')) {
     sourceUrl: 'https://arxiv.org/abs/1706.03762',
   });
 }
-
-document.addEventListener('keydown', async (e) => {
-  if (e.key === 'Escape') return window.inbox.dismiss();
-  if (e.key !== 'Enter') return;
-  if (!payload.text?.trim()) return window.inbox.dismiss();
-
-  $('main').classList.add('hide');
-  $('busy').classList.add('on');
-
-  try {
-    const r = await window.inbox.submit({ ...payload, note: $('note').value });
-    $('busy').classList.remove('on');
-    $('done').classList.add('on');
-    if (r.ok) {
-      const files = (r.changedFiles || []).filter((f) => !f.startsWith('inbox/'));
-      $('done').innerHTML = `<span style="color:var(--ok)">✓</span>
-        <span>filed to</span> <span class="route">${esc(files[0] || 'the vault')}</span>`;
-      setTimeout(() => window.inbox.dismiss(), 2200);
-    } else {
-      $('done').innerHTML = `<span class="err">✕ ${esc(String(r.error).slice(0, 90))}</span>`;
-      setTimeout(() => window.inbox.dismiss(), 3200);
-    }
-  } catch (err) {
-    $('busy').classList.remove('on');
-    $('done').classList.add('on');
-    $('done').innerHTML = `<span class="err">✕ server not running — npm run dev</span>`;
-    setTimeout(() => window.inbox.dismiss(), 3200);
-  }
-});
+if (!IN_ELECTRON && new URLSearchParams(location.search).get('empty')) {
+  window.__fill({ text: '', sourceApp: 'Safari', sourceUrl: 'https://x.com/athreyaanand/status/2093406102679654873' });
+}
 </script>
 </body>
 </html>
