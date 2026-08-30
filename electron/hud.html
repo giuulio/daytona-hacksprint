@@ -344,8 +344,9 @@ function setTab(next) {
   $('srcrow').classList.toggle('hide', dash);
   document.body.classList.toggle('dashmode', dash);
   if (dash) {
-    // load lazily so the capture tab never waits on the server
-    if ($('dashFrame').src === 'about:blank') $('dashFrame').src = 'http://localhost:3737/?embed=1';
+    // reload every time — a long-lived HUD would otherwise pin whatever version
+    // of the dashboard it first loaded
+    $('dashFrame').src = 'http://localhost:3737/?embed=1&t=' + Date.now();
     window.inbox.shape('dash');
   } else {
     window.inbox.shape('cap');
