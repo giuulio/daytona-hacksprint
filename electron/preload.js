@@ -7,6 +7,7 @@ contextBridge.exposeInMainWorld('inbox', {
   save: (payload) => ipcRenderer.invoke('capture:save', payload),
   file: (payload) => ipcRenderer.invoke('capture:file', payload),
   dismiss: () => ipcRenderer.send('capture:dismiss'),
+  resume: () => ipcRenderer.send('capture:resume'),
   resize: (h) => ipcRenderer.send('capture:resize', h),
   openVault: () => ipcRenderer.send('capture:open-vault'),
 });

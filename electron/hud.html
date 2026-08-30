@@ -13,7 +13,7 @@
   }
   * { box-sizing: border-box; }
   /* full-bleed: the window IS the HUD. Any gap here shows raw vibrancy. */
-  html, body { margin: 0; background: transparent; overflow: hidden; }
+  html, body { margin: 0; background: transparent; overflow: hidden; width: 100%; }
   body {
     font: 14px/1.5 -apple-system, ui-sans-serif, system-ui, sans-serif;
     color: var(--fg); -webkit-font-smoothing: antialiased;
@@ -25,41 +25,44 @@
   @keyframes rise { from { opacity: 0; transform: translateY(5px) scale(.99); } }
 
   header {
-    -webkit-app-region: drag;
-    display: flex; align-items: center; gap: 9px; padding: 11px 12px 11px 15px; flex: none;
+    -webkit-app-region: drag; overflow: hidden;
+    display: flex; align-items: center; gap: 8px; padding: 10px 10px 10px 13px; flex: none;
   }
   .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--violet); flex: none;
          box-shadow: 0 0 0 3px rgba(167,139,250,0.18); }
-  .src { font-size: 12px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .src { font-size: 12px; color: var(--fg); white-space: nowrap; overflow: hidden;
+         text-overflow: ellipsis; min-width: 0; flex: 0 1 auto; }
   .src b { color: var(--fg); font-weight: 600; }
-  .url { font: 11px ui-monospace, Menlo, monospace; color: var(--faint); margin-left: auto;
-         max-width: 42%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-         direction: rtl; text-align: right; }
+  .url { font: 11px ui-monospace, Menlo, monospace; color: var(--dim); margin-left: auto;
+         min-width: 0; flex: 0 1 auto; white-space: nowrap; overflow: hidden;
+         text-overflow: ellipsis; direction: rtl; text-align: right; }
   .x { -webkit-app-region: no-drag; flex: none; width: 22px; height: 22px; border-radius: 6px;
        border: 1px solid var(--line); background: rgba(255,255,255,0.05); color: var(--dim);
        font: 13px/1 -apple-system, system-ui; cursor: pointer; padding: 0; }
   .x:hover { background: rgba(247,118,142,0.16); color: #ffb3c0; border-color: rgba(247,118,142,.4); }
 
-  .capture { padding: 2px 16px 0; }
+  .capture { padding: 2px 13px 0; }
   .mark {
+    overflow-wrap: anywhere;
     font: 15px/1.75 ui-serif, Georgia, "Times New Roman", serif;
     background: linear-gradient(transparent 10%, var(--violet-soft) 10%, var(--violet-soft) 90%, transparent 90%);
     -webkit-box-decoration-break: clone; box-decoration-break: clone;
     padding: 1px 4px; border-radius: 2px;
-    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+    display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
   }
   .mark.empty, .mark.reading { font-family: inherit; font-size: 14px; color: #ded8f8; }
   .mark.reading { background: linear-gradient(transparent 10%, rgba(167,139,250,.16) 10%,
                   rgba(167,139,250,.16) 90%, transparent 90%); animation: breathe 1.1s ease-in-out infinite; }
   @keyframes breathe { 50% { opacity: .5; } }
 
-  .row { -webkit-app-region: no-drag; display: flex; align-items: center; gap: 8px; padding: 11px 15px 12px; }
+  .row { -webkit-app-region: no-drag; display: flex; align-items: center; gap: 7px; padding: 10px 13px 12px; }
   input {
-    flex: 1; background: rgba(255,255,255,.06); color: var(--fg);
-    border: 1px solid var(--line); border-radius: 9px; padding: 10px 12px;
-    font: inherit; outline: none; transition: border-color .14s, background .14s;
+    flex: 1 1 auto; min-width: 0;
+    background: rgba(255,255,255,.06); color: var(--fg);
+    border: 1px solid var(--line); border-radius: 9px; padding: 9px 11px;
+    font-size: 13px; font-family: inherit; outline: none; transition: border-color .14s, background .14s;
   }
-  input::placeholder { color: var(--faint); }
+  input::placeholder { color: #8d93a5; }
   input:focus { border-color: var(--violet-line); background: rgba(167,139,250,.09); }
   input:disabled { opacity: .45; }
 
@@ -67,7 +70,7 @@
     flex: none; border: 0; border-radius: 9px; cursor: pointer;
     background: var(--violet); color: #16121f;
     font: 600 13px/1 -apple-system, system-ui, sans-serif;
-    padding: 11px 14px; display: flex; align-items: center; gap: 6px;
+    padding: 10px 12px; display: flex; align-items: center; gap: 5px; white-space: nowrap;
     transition: filter .14s, opacity .14s;
   }
   button.act:hover:not(:disabled) { filter: brightness(1.1); }
@@ -77,21 +80,22 @@
   /* ---- session log ---- */
   .sess { border-top: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; }
   .sesshead {
-    display: flex; align-items: center; gap: 8px; padding: 9px 15px 7px; flex: none;
-    font: 11px ui-monospace, Menlo, monospace; color: var(--faint);
+    display: flex; align-items: center; gap: 8px; padding: 9px 13px 7px; flex: none;
+    white-space: nowrap; overflow: hidden;
+    font: 11px ui-monospace, Menlo, monospace; color: var(--dim);
     text-transform: uppercase; letter-spacing: .07em;
   }
   .fileall {
     -webkit-app-region: no-drag; margin-left: auto; border: 1px solid var(--violet-line);
     background: rgba(167,139,250,.12); color: #cbb8ff; border-radius: 7px;
-    font: 600 11px/1 -apple-system, system-ui; padding: 6px 9px; cursor: pointer;
+    font: 600 11px/1 -apple-system, system-ui; padding: 6px 8px; cursor: pointer; flex: none;
   }
   .fileall:disabled { opacity: .3; cursor: default; }
-  .list { overflow-y: auto; max-height: 190px; padding: 0 10px 10px; }
+  .list { overflow-y: auto; max-height: 320px; padding: 0 8px 10px; }
   .list::-webkit-scrollbar { width: 8px; }
   .list::-webkit-scrollbar-thumb { background: rgba(255,255,255,.13); border-radius: 4px; }
   .item {
-    display: flex; align-items: flex-start; gap: 9px; padding: 8px 6px;
+    display: flex; align-items: flex-start; gap: 8px; min-width: 0; padding: 8px 6px;
     border-radius: 8px; font-size: 12.5px;
   }
   .item:hover { background: rgba(255,255,255,.04); }
@@ -101,8 +105,9 @@
   .pip.filed { background: var(--ok); }
   .pip.error { background: var(--bad); }
   .itext { flex: 1; min-width: 0; }
-  .isnip { color: #cfd2dd; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .istat { font: 11px ui-monospace, Menlo, monospace; color: var(--faint); margin-top: 2px;
+  .isnip { color: var(--fg); overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2;
+           -webkit-box-orient: vertical; overflow: hidden; }
+  .istat { font: 11px ui-monospace, Menlo, monospace; color: var(--dim); margin-top: 2px;
            overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .istat.filed { color: var(--ok); }
   .istat.error { color: var(--bad); }
@@ -112,7 +117,7 @@
     font: 600 11px/1 -apple-system, system-ui; padding: 6px 8px; cursor: pointer;
   }
   .ifile:hover { border-color: var(--violet-line); color: #cbb8ff; }
-  .empty-list { padding: 4px 16px 12px; font-size: 12px; color: var(--faint); }
+  .empty-list { padding: 4px 16px 12px; font-size: 12px; color: var(--dim); }
   .hide { display: none !important; }
 </style>
 </head>
@@ -154,7 +159,7 @@ if (!IN_ELECTRON) {
     onSelection: (f) => { window.__fill = f; }, onSource: () => {}, onPending: () => {},
     save: async () => ({ ok: true, inbox: 'inbox/2026-08-30-demo.md' }),
     file: async () => ({ ok: true, changedFiles: ['sources/attention-is-all-you-need.md'] }),
-    dismiss(){}, resize(){}, openVault(){},
+    dismiss(){}, resize(){}, openVault(){}, resume(){},
   };
 }
 
@@ -255,6 +260,9 @@ async function save() {
   if (r.ok) { item.inbox = r.inbox; }
   else { item.status = 'error'; item.error = String(r.error).slice(0, 80); }
   render();
+  // Hand focus back to the source app; tracking only runs while we are unfocused,
+  // which is why a second highlight used to go unnoticed after the first save.
+  window.inbox.resume();
 }
 
 /** FILE — slow. Codex reads the vault and decides where this belongs. */
@@ -307,6 +315,7 @@ if (!IN_ELECTRON) {
     render();
   }
 }
+
 </script>
 </body>
 </html>

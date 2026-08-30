@@ -62,12 +62,13 @@ const sendCopy = () => osaAsync('tell application "System Events" to keystroke "
  */
 let track = null;
 let originalClip = '';
+let sourceApp = '';
 
 function stopTracking() {
   if (track) { clearTimeout(track); track = null; }
 }
 
-async function trackLoop(sourceApp) {
+async function trackLoop() {
   if (!win || !win.isVisible() || win.isFocused()) { stopTracking(); return; }
   try {
     await sendCopy();
@@ -77,7 +78,7 @@ async function trackLoop(sourceApp) {
       if (win && !win.isDestroyed()) win.webContents.send('capture:selection', { text: now, sourceApp });
     }
   } catch { /* keep polling */ }
-  if (win?.isVisible() && !win.isFocused()) track = setTimeout(() => trackLoop(sourceApp), 500);
+  if (win?.isVisible() && !win.isFocused()) track = setTimeout(trackLoop, 500);
   else stopTracking();
 }
 
@@ -128,8 +129,8 @@ function browserUrlAsync(appName) {
 
 function createWindow() {
   win = new BrowserWindow({
-    width: 640,
-    height: 180,
+    width: 430,
+    height: 200,
     frame: false,
     transparent: true,
     vibrancy: 'hud',
@@ -158,8 +159,24 @@ function createWindow() {
   win.setAlwaysOnTop(true, 'screen-saver');
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   win.loadFile(path.join(__dirname, 'hud.html'));
-  // Deliberately NO blur handler — the HUD is a session surface you keep open
-  // while reading. It closes on the X button or esc, nothing else.
+  // The HUD stays open when you click away (no hide-on-blur). Focus only decides
+  // whether we are tracking: Cmd-C needs the SOURCE app focused, so tracking runs
+  // exactly when the HUD is not focused.
+  win.on('focus', stopTracking);
+  win.on('blur', () => { if (win?.isVisible() && !track) trackLoop(); });
+}
+
+/** Park it top-right of the display under the cursor. Still draggable. */
+function place() {
+  if (!win) return;
+  const { workArea } = screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
+  const b = win.getBounds();
+  win.setBounds({
+    x: Math.round(workArea.x + workArea.width - b.width - 24),
+    y: Math.round(workArea.y + 24),
+    width: b.width,
+    height: b.height,
+  });
 }
 
 async function hide() {
@@ -176,18 +193,19 @@ async function summon() {
 
     // Show FIRST, and take no focus. showInactive leaves the source app focused,
     // which is exactly what Cmd-C needs; focus is stolen only once we have text.
-    win.center();
+    place();
     win.showInactive();
     win.webContents.send('capture:pending');
     const tShown = Date.now();
 
     originalClip = lastClip;
     const appName = await frontAppAsync();   // before any focus change
+    sourceApp = appName;
     console.log(`[summon] visible in ${tShown - t0}ms app=${JSON.stringify(appName)} — tracking selection`);
 
     // Never focus here. The source app keeps focus so Cmd-C reaches the page.
     stopTracking();
-    trackLoop(appName);
+    trackLoop();
 
     const url = await browserUrlAsync(appName);
     if (win && !win.isDestroyed()) win.webContents.send('capture:source', { sourceApp: appName, sourceUrl: url });
@@ -216,18 +234,24 @@ const post = async (route, payload) => {
 ipcMain.handle('capture:save', (_e, payload) => post('/save', payload));
 ipcMain.handle('capture:file', (_e, payload) => post('/file', payload));
 
+/**
+ * After a save the HUD still has focus, which keeps tracking stopped — that is
+ * why a second highlight never appeared. Give focus back to the source app and
+ * resume.
+ */
+ipcMain.on('capture:resume', async () => {
+  if (!win || !win.isVisible()) return;
+  if (sourceApp) await osaAsync(`tell application "${sourceApp}" to activate`);
+  else win.blur();
+  if (!track) trackLoop();
+});
+
 ipcMain.on('capture:dismiss', hide);
 ipcMain.on('capture:resize', (_e, h) => {
   if (!win) return;
   const b = win.getBounds();
-  const height = Math.max(120, Math.min(520, Math.round(h)));
-  const { workArea } = screen.getDisplayNearestPoint({ x: b.x, y: b.y });
-  win.setBounds({
-    x: b.x,
-    y: Math.round(workArea.y + (workArea.height - height) / 2),
-    width: b.width,
-    height,
-  }, false);
+  // grow downward from the top-right anchor; never move x/y
+  win.setBounds({ x: b.x, y: b.y, width: b.width, height: Math.max(150, Math.min(640, Math.round(h))) }, false);
 });
 ipcMain.on('capture:open-vault', () => shell.openPath(path.join(__dirname, '..', 'vault')));
 
